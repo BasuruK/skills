@@ -1,248 +1,702 @@
-### Notion-flavored Markdown
-Notion-flavored Markdown is a variant of standard Markdown with additional features to support all Block and Rich text types.
-Use tabs for indentation.
-Use backslashes to escape characters. For example, \* will render as * and not as a bold delimiter.
-These are the characters that should be escaped: \ * ~ ` $ [ ] < > { } | ^
-Block types:
-Markdown blocks use a {color="Color"} attribute list to set a block color.
-Text:
-Rich text {color="Color"}
-	Children
-Headings:
-# Rich text {color="Color"}
-## Rich text {color="Color"}
-### Rich text {color="Color"}
-#### Rich text {color="Color"}
-(Headings 5 and 6 are not supported in Notion and will be converted to heading 4.)
-Bulleted list:
-- Rich text {color="Color"}
-	Children
-Numbered list:
-1. Rich text {color="Color"}
-	Children
-	
-Bulleted and numbered list items should contain inline rich text -- otherwise they will render as empty list items, which look awkward in the Notion UI. (The inline text should be rich text -- any other block type will not be rendered inline, but as a child to an empty list item.)
-Empty line:
-<empty-block/>
-Notion renders blocks with appropriate spacing, so there is almost never a need to use empty lines.
-To render correctly as an empty line, <empty-block/> must be on its own line with no other text.
-Empty lines without <empty-block/> will be stripped out.
-Rich text types:
-Bold:
-**Rich text**
-Italic:
-*Rich text*
-Strikethrough:
-~~Rich text~~
-Underline:
-<span underline="true">Rich text</span>
-Inline code:
-`Code`
-Multi-line inline code:
-`Line 1<br>Line 2<br>Line 3`
-Unlike in standard markdown, never use ordinary newlines inside inline code -- this will break the code span and render backticks as literal text:
-`Line 1
-Line 2` <-- BAD: newline breaks the inline code
-Link:
-[Link text](URL)
-Citation:
-[^URL]
-To create a citation, you can either reference a compressed URL like this,[^{{1}}] or a full URL like this.[^example.com]
-Inline colors:
-<span color?="Color">Rich text</span>
-Inline math:
-$`Equation`$
-The equation must be enclosed in backticks.
-Inline line breaks within a block (this is mostly useful in multi-line quote blocks, where an ordinary newline character should not be used since it will break up the block structure):
-<br>
-Quote:
-> Rich text {color="Color"}
-	Children
-Multi-line quote:
-> Line 1<br>Line 2<br>Line 3 {color="Color"}
-Unlike in standard markdown, never use ordinary newlines anywhere mid-quote -- this will render as multiple separate quote blocks, not a single multi-line quote:
-> This is a quote
-> This is a different, unrelated quote
-> This is a third quote
-Use of a single > on a line without any other text should be avoided -- this will render as an empty blockquote, which is not visually appealing.
-To-do:
-- [ ] Rich text {color="Color"}
-	Children
-- [x] Rich text {color="Color"}
-	Children
-Divider:
+# Notion-Flavored Markdown (NFM) Guide for BMAD Documents
+**Version:** 2026.2
+**Audience:** LLMs and AI agents that create or update structured BMAD documents in Notion through Notion MCP or the Notion enhanced-markdown API.
+**Status:** Verified against the official Notion enhanced-markdown documentation and markdown-content API behavior as of July 2026.
 ---
-Table:
-<table fit-page-width?="true|false" header-row?="true|false" header-column?="true|false">
+## 1. Purpose and operating principles
+Use this guide when converting BMAD outputs such as product briefs, architecture documents, epics, stories, decision records, implementation plans, and retrospectivesinto clean Notion pages.
+The agent must prioritize:
+1. **Structural correctness** - every block must map cleanly to a supported Notion block.
+2. **Readable hierarchy** - use headings, callouts, lists, tables, toggles, and columns intentionally.
+3. **Safe updates** - preserve child pages, child databases, synced blocks, and protected content.
+4. **Round-trip stability** - avoid unsupported or undocumented syntax that may be converted to `<unknown>` blocks.
+5. **Minimal decoration** - styling should clarify meaning, not overwhelm the document.
+---
+## 2. Syntax fundamentals
+### 2.1 Indentation
+Use **exactly one tab per nesting level**.
+
+Do not use spaces for structural nesting.
+
+```text
+- Parent item
+	- Child item
+		- Grandchild item
+```
+
+Child blocks must be indented one tab deeper than their parent.
+### 2.2 Newlines
+Use a physical newline to create a new block.
+
+Use `<br>` only when a line break must remain inside a single block.
+
+```text
+First paragraph block.
+Second paragraph block.
+
+> One quote block with line one<br>and line two
+```
+
+Plain empty lines are stripped from enhanced markdown. Use `<empty-block/>` only when an explicit blank block is required.
+### 2.3 Escaping
+Outside code blocks and equations, escape literal formatting characters with a single backslash:
+
+```text
+\  *  ~  `  $  [  ]  <  >  {  }  |  ^
+```
+
+Do not escape characters inside:
+
+- inline code
+- fenced code blocks
+- Mermaid blocks
+- inline equations
+- block equations
+
+---
+
+## 3. Colors and attributes
+### 3.1 Supported colors
+**Text colors**
+
+```text
+gray, brown, orange, yellow, green, blue, purple, pink, red
+```
+
+**Background colors**
+
+```text
+gray_bg, brown_bg, orange_bg, yellow_bg, green_bg, blue_bg,
+purple_bg, pink_bg, red_bg
+```
+
+### 3.2 Block color
+Append a color attribute to the first line of a block:
+
+```text
+## Risks {color="red"}
+```
+
+### 3.3 Inline color
+
+```text
+<span color="red">Critical dependency</span>
+```
+
+A single rich-text span should not combine a text color and a background color.
+### 3.4 BMAD color conventions
+Use colors consistently:
+
+- `blue` or `blue_bg` — context, scope, or informational notes
+- `green` or `green_bg` — completed, approved, validated
+- `yellow` or `yellow_bg` — assumptions, warnings, pending decisions
+- `red` or `red_bg` — blockers, critical risks, failed validation
+- `purple` or `purple_bg` — architectural decisions or design rationale
+- `gray` or `gray_bg` — metadata, supporting context, low-priority detail
+
+Avoid assigning colors to every block.
+
+---
+
+## 4. Core block types
+### 4.1 Paragraph
+
+```text
+Rich text content {color="gray"}
+```
+
+Paragraphs may contain nested child blocks when the target block type permits children.
+### 4.2 Headings
+
+```text
+# Heading 1
+## Heading 2
+### Heading 3
+#### Heading 4
+```
+
+Notion supports heading levels 1 through 4 in enhanced markdown.
+
+Headings 5 and 6 are converted to heading 4.
+
+Regular headings do not support children. A heading may contain children only when it is explicitly configured as a toggle heading.
+### 4.3 Bulleted lists
+
+```text
+- Parent item
+	Supporting child paragraph.
+	- Nested item
+```
+
+Every list item should contain inline text on its declaration line.
+
+Do not create an empty list marker and place all content beneath it.
+### 4.4 Numbered lists
+
+```text
+1. First step
+2. Second step
+	1. Nested step
+```
+
+### 4.5 To-do lists
+
+```text
+- [ ] Pending item
+- [x] Completed item
+```
+
+### 4.6 Quote
+
+```text
+> Decision rationale or quoted requirement
+```
+
+For multiple lines inside one quote block:
+
+```text
+> First line<br>Second line<br>Third line
+```
+
+Multiple physical lines beginning with `>` create separate quote blocks.
+### 4.7 Divider
+
+```text
+---
+```
+
+### 4.8 Explicit blank block
+
+```text
+<empty-block/>
+```
+
+Use sparingly. It must appear alone on its line.
+
+---
+
+## 5. Rich-text formatting
+
+```text
+**Bold**
+*Italic*
+~~Strikethrough~~
+<span underline="true">Underline</span>
+`Inline code`
+[Link text](https://example.com)
+<span color="blue">Colored text</span>
+Line one<br>Line two
+```
+
+Styles may be combined unless they conflict.
+### 5.1 Inline code with a visual line break
+Physical newlines are not permitted inside an inline-code span.
+
+Use:
+
+```text
+`Line 1<br>Line 2`
+```
+
+### 5.2 Inline equation
+Use ordinary dollar delimiters:
+
+```text
+$E = mc^2$
+```
+
+Do not wrap the equation in backticks.
+### 5.3 Block equation
+
+```text
+$$
+E = mc^2
+$$
+```
+
+---
+
+## 6. Toggles and callouts
+### 6.1 Standard toggle
+
+```text
+<details color="gray_bg">
+<summary>Implementation details</summary>
+	Child paragraph
+	- Child list item
+</details>
+```
+
+The child content must be indented.
+
+Keep `<summary>` directly inside `<details>` and use it only for the toggle title.
+### 6.2 Toggle heading
+
+```text
+## Detailed acceptance criteria {toggle="true" color="blue"}
+	- Criterion one
+	- Criterion two
+```
+
+### 6.3 Callout
+
+```text
+<callout icon="💡" color="yellow_bg">
+	**Key assumption**
+	The design assumes one active lease per worker.
+</callout>
+```
+
+Every block inside a callout must be indented.
+### 6.4 BMAD usage
+Recommended use:
+
+- assumptions → yellow callout
+- architecture decisions → purple callout
+- blockers → red callout
+- validation outcome → green callout
+- background context → blue callout
+
+Do not use a callout only for visual decoration.
+
+---
+
+## 7. Tables
+Use XML-style table markup when block attributes, colors, or explicit table configuration are needed.
+
+```text
+<table fit-page-width="true" header-row="true" header-column="false">
 	<colgroup>
-		<col color?="Color">
-		<col color?="Color">
+		<col color="gray">
+		<col color="blue_bg">
 	</colgroup>
-	<tr color?="Color">
-		<td>Data cell</td>
-		<td color?="Color">Data cell</td>
+	<tr color="purple_bg">
+		<td>**Field**</td>
+		<td>**Value**</td>
 	</tr>
 	<tr>
-		<td>Data cell</td>
-		<td>Data cell</td>
+		<td>Status</td>
+		<td><span color="green">Approved</span></td>
 	</tr>
 </table>
-Note: All table attributes are optional. If omitted, they default to "false".
-Table structure:
-- <table>: Root element with optional attributes:
-  - fit-page-width: Whether the table should fill the page width
-  - header-row: Whether the first row is a header
-  - header-column: Whether the first column is a header
-- <colgroup>: Optional element defining column-wide styles. Do not include a <colgroup> element if you do not want to set any column colors or widths.
-- <col>: Column definition with optional attributes:
-  - color: The color of the column
-  - width: The width of the column. Leave empty to auto-size.
-- <tr>: Table row with optional color attribute
-- <td>: Data cell with optional color attribute
-Color precedence (highest to lowest):
-1. Cell color (<td color="red">)
-2. Row color (<tr color="blue_bg">)
-3. Column color (<col color="gray">)
-Contents of table cells:
-- Table cells can only contain rich text. Other block types (headings, lists, images, etc.) are not supported.
-- Never use raw HTML formatting tags inside table cells; use the equivalent Notion-flavored Markdown instead, for example **bold** instead of <strong> or <b>.
-Cell merging:
-- Notion supports merging rectangular groups of cells into a single cell.
-- You cannot create or modify cell merges through this format. If the user asks you to merge cells, tell them Notion supports it but they must do it in the UI: select the cells, right-click, and choose "Merge cells". To unmerge, use "Unmerge cells" from the same menu.
-Equation:
-$$
-Equation
-$$
-		Code:
-```language
-Code
 ```
-Note: Set the language if known (e.g. mermaid). Do NOT escape special characters inside code blocks. Code block content is literal - write it exactly as it should appear. For example, write `const arr = [1, 2, 3]` NOT `const arr = \[1, 2, 3\]`. Backslash escaping rules only apply outside of code blocks.
-Mermaid diagrams: Use ```mermaid as the language. Enclose node text in double quotes when it contains special characters like parentheses, e.g. `A["Notion (App + API)"]`. Use `<br>` for line breaks inside node labels, not \n. Do not use \( or \) inside Mermaid — instead just wrap the whole label in double quotes.
-XML blocks use the 'color' attribute to set a block color.
-Mentions:
-Users, pages, databases, data sources, agents, dates, and datetimes can be mentioned:
-<mention-user url="{{URL}}">User name</mention-user>
-<mention-page url="{{URL}}">Page title</mention-page>
-<mention-database url="{{URL}}">Database name</mention-database>
-<mention-data-source url="{{URL}}">Data source name</mention-data-source>
-<mention-agent url="{{URL}}">Agent name</mention-agent>
-<mention-date start="YYYY-MM-DD" end="YYYY-MM-DD"/>
-<mention-date start="YYYY-MM-DD" startTime="HH:mm" timeZone="IANA_TIMEZONE"/>
-<mention-date start="YYYY-MM-DD" startTime="HH:mm" end="YYYY-MM-DD" endTime="HH:mm" timeZone="IANA_TIMEZONE"/>
-The URL must always be provided, and refer to an existing user, page, database, data source, agent, date, or datetime.
-The inner text (name/title) is optional. The UI always displays the resolved name. So an alternative self-closing format is also supported: <mention-user url="{{URL}}"/>
-Mentions are clickable and link to the entity.
-For dates and datetimes, omit the 'end' attribute to mention a single date or datetime.
-<mention-page> is an inline reference only. Do NOT use it to replace a <page> block — removing a <page> block deletes the child page.
-Colors:
-Text colors (colored text with transparent background):
-gray, brown, orange, yellow, green, blue, purple, pink, red
-Background colors (colored background with contrasting text):
-gray_bg, brown_bg, orange_bg, yellow_bg, green_bg, blue_bg, purple_bg, pink_bg, red_bg
-Usage:
-- Block colors: Add color="Color" to the first line of any block
-- Inline rich text colors (text colors and background colors are both supported): Use <span color="Color">Rich text</span>
-#### Advanced Block types for Page content
-The following block types may only be used in page content, not in the chat UI.
-<advanced-blocks>
-Toggle:
-<details color?="Color">
-<summary>Rich text</summary>
-Children
-</details>
-Toggle headings use the {toggle="true"} attribute on a heading:
-Toggle heading 1:
-# Rich text {toggle="true" color?="Color"}
-	Children
-Toggle heading 2:
-## Rich text {toggle="true" color?="Color"}
-	Children
-Toggle heading 3:
-### Rich text {toggle="true" color?="Color"}
-	Children
-For toggles and toggle headings, the children must be indented in order for them to be toggleable. If you do not indent the children, they will not be contained within the toggle or toggle heading.
-Callout:
-<callout icon?="emoji or Notion Icon" color?="Color">
-	Rich text
-	Children
-</callout>
-Callouts can contain multiple blocks and nested children, not just inline rich text. Each child block should be indented.
-For any formatting inside of callout blocks, use Notion-flavored Markdown, not HTML. For instance, bold text in a callout should be wrapped in **, not <strong>.
-Columns:
+
+Rules:
+
+- `fit-page-width`, `header-row`, and `header-column` accept `true` or `false`.
+- All three attributes are optional and default to `false`.
+- Table cells may contain rich text only.
+- Do not place headings, lists, callouts, nested tables, or other block types inside `<td>`.
+- Color precedence is: cell → row → column.
+- Do not use undocumented column-width attributes.
+- Programmatic cell merging is not supported through enhanced markdown.
+
+When a table is simple and requires no attributes, standard Markdown table syntax may also be accepted:
+
+```text
+| Status | Owner |
+|---|---|
+| In progress | Ada |
+```
+
+For BMAD documents, prefer tables for compact comparisons, traceability matrices, role mappings, risk registers, and acceptance-criteria summaries. Avoid tables for long narrative content.
+
+---
+
+## 8. Columns
+
+```text
 <columns>
 	<column>
-		Children
+		### Goals
+		- Goal one
+		- Goal two
 	</column>
 	<column>
-		Children
+		### Non-goals
+		- Non-goal one
+		- Non-goal two
 	</column>
 </columns>
-Custom emoji:
-:emoji_name:
-Page:
-<page url="{{URL}}" color?="Color">Title</page>
-IMPORTANT: A <page> tag represents a subpage (child page) on the current page.
-WARNING: Using <page> with an existing page URL will MOVE that page into this page as a subpage. Removing that <page> tag from the content will REMOVE that child page from the current page. If moving is not intended use the <mention-page> block instead.
-Database:
-<database url?="{{URL}}" inline?="true|false" icon?="Emoji" color?="Color" data-source-url?="{{URL}}" wiki?="true|false">Title</database>
-Provide either url or data-source-url attribute:
-- If 'url' is an existing database URL, including it here will MOVE that database into the current page. If you just want to mention an existing database, use <mention-database> instead.
-- If 'data-source-url' is an existing data source URL, creates a linked database view.
-The 'inline' attribute toggles how the database is displayed in the UI. If set to "true", the database is fully visible and interactive on the page. If set to "false", the database is displayed as a sub-page. If you try to set inline to an invalid value, it will default to "false".
-The 'wiki' attribute indicates whether this database is a wiki. Wiki databases have wiki="true". When creating pages in a wiki database, you MUST use parent type "page" with the wiki's page URL instead of parent type "dataSource". Wiki pages must be created under the database page, not the data source directly.
-There is no 'Data Source' block type. Data Sources are always inside a Database, and only Databases can be inserted into a Page.
-Audio:
-<audio src="{{URL}}" color?="Color">Caption</audio>
-File:
-<file src="{{URL}}" color?="Color">Caption</file>
-Embed (renders an HTML attachment file inline in a sandboxed iframe):
-<embed src="{{URL}}" color?="Color">Caption</embed>
-"HTML", "HTML block", "HTML artifact", and "HTML embed" all mean an HTML attachment rendered with <embed>. Never create one as a code block or file block.
-Always use <embed> for HTML attachment files (not file). Don't use it for anything else.
-For files created by the MCP create-attachment tool, use its returned file-upload:// source as the src value. The source is resolved and attached when create-pages or update-page saves the block. Keep the returned file upload ID if you need to retrieve the text later with download-attachment.
-Image:
-![Caption](URL) {color?="Color"}
-PDF:
-<pdf src="{{URL}}" color?="Color">Caption</pdf>
-Video:
-<video src="{{URL}}" color?="Color">Caption</video>
-(Note that source URLs can either be compressed URLs, such as src="{{1}}", or full URLs, such as src="example.com". Full URLs enclosed in curly brackets, like src="{{https://example.com}}" or src="{{example.com}}", do not work.)
-Table of contents:
-<table_of_contents color?="Color"/>
-Synced block:
-The original source for a synced block.
-When creating a new synced block, do not provide the URL. After inserting the synced block into a page, the URL will be provided.
-<synced_block url?="{{URL}}">
-	Children
+```
+
+All blocks inside each column must be indented.
+
+Use columns only when two or more sections benefit from direct visual comparison. Avoid placing long technical narratives or deeply nested content in columns.
+
+---
+
+## 9. Code blocks and Mermaid diagrams
+### 9.1 Code block
+
+````text
+```javascript
+const value = "Do not escape [brackets] or *asterisks* here";
+```
+````
+
+Code-block content is literal. Do not escape Markdown characters inside it.
+
+Always specify a language when known.
+### 9.2 Mermaid
+
+````text
+```mermaid
+flowchart TD
+	A["Client (Web UI)"] -->|MCP request| B["Notion API"]
+```
+````
+
+For stable Mermaid rendering:
+
+- quote labels containing parentheses, colons, brackets, or punctuation
+- use `<br>` for line breaks inside node labels
+- keep node IDs simple and alphanumeric
+- avoid raw Markdown formatting inside Mermaid labels
+- validate complex diagrams before publishing
+
+For large BMAD architecture diagrams, prefer multiple focused diagrams over one oversized diagram.
+
+---
+
+## 10. Media and files
+Supported enhanced-markdown media blocks include:
+
+```text
+![Caption](URL) {color="gray"}
+
+<audio src="URL" color="gray">Caption</audio>
+<video src="URL" color="gray">Caption</video>
+<pdf src="URL" color="gray">Caption</pdf>
+<file src="URL" color="gray">Caption</file>
+```
+
+Rules:
+
+- Use a stable HTTPS URL or the file URI returned by the relevant upload tool.
+- Treat pre-signed URLs returned from Notion as temporary.
+- Do not invent upload identifiers.
+- Do not use `<embed>` as a guaranteed enhanced-markdown block. Third-party embeds, bookmarks, and link previews may be returned as unsupported `<unknown>` blocks and may require a dedicated Notion tool or block API.
+
+---
+
+## 11. Mentions, references, and citations
+### 11.1 Mentions
+
+```text
+<mention-user url="URL">User name</mention-user>
+<mention-page url="URL">Page title</mention-page>
+<mention-database url="URL">Database name</mention-database>
+<mention-data-source url="URL">Data source name</mention-data-source>
+<mention-agent url="URL">Agent name</mention-agent>
+<mention-date start="2026-07-11"/>
+<mention-date start="2026-07-11" end="2026-07-15"/>
+<mention-date start="2026-07-11" startTime="20:00" timeZone="Asia/Colombo"/>
+```
+
+Self-closing mention forms are permitted when the backend can resolve display text:
+
+```text
+<mention-page url="URL"/>
+```
+
+### 11.2 Citations
+
+```text
+[^https://example.com/source]
+```
+
+A citation contains a URL inside `[^...]`.
+
+Do not use compressed placeholders such as `[^{{1}}]` unless the consuming system explicitly resolves them before sending the content to Notion.
+### 11.3 Child page and database blocks
+
+```text
+<page url="URL" color="gray">Page title</page>
+<database url="URL" inline="false" icon="📚" color="gray">Database title</database>
+```
+
+These are structural child-page or child-database blocks, not ordinary hyperlinks.
+
+Use inline mention tags when the intent is only to reference an existing object:
+
+```text
+See <mention-page url="URL">Architecture decision record</mention-page>.
+```
+
+---
+
+## 12. Synced blocks
+
+```text
+<synced_block>
+	Shared content
 </synced_block>
-Note: When creating new synced blocks, omit the url attribute - it will be auto-generated. When reading existing synced blocks, the url attribute will be present.
-Synced block reference:
-A reference to a synced block.
-The synced block must already exist and url must be provided.
-You can directly update the children of the synced block reference and it will update both the original synced block and the synced block reference.
-If content is unavailable due to permissions, a non-editable notice may be included via the optional notice attribute.
-<synced_block_reference url="{{URL}}" notice="{{OPTIONAL_NOTICE}}">
-	Children
+```
+
+Reference an existing synced block only when a valid block URL is available:
+
+```text
+<synced_block_reference url="URL">
+	Mirrored content
 </synced_block_reference>
-Meeting notes:
+```
+
+Do not fabricate synced-block URLs.
+
+Do not assume that removing a synced-block representation from a generated document is harmless. Fetch the current page and use targeted updates whenever preserving existing structure matters.
+
+---
+
+## 13. Table of contents
+
+```text
+<table_of_contents color="gray"/>
+```
+
+Use a table of contents for long BMAD documents with multiple second-level sections.
+
+Place it near the top of the page, after the executive summary or metadata callout.
+
+---
+
+## 14. Meeting notes
+A meeting-notes block may appear in content retrieved from Notion:
+
+```text
 <meeting-notes>
-	Rich text (meeting title)
-	<summary>
-		AI-generated summary of the notes + transcript
-	</summary>
+	Meeting title
 	<notes>
-		User notes
+		- Captured note
 	</notes>
-	<transcript>
-		Transcript of the audio (cannot be edited)
-	</transcript>
 </meeting-notes>
-- The <transcript> tag contains a raw transcript and cannot be edited by AI, but it can be edited by a user.
-- When creating new meeting notes blocks, you must omit the <summary> and <transcript> tags.
-- Only include <notes> in a new meeting notes block if the user is SPECIFICALLY requesting note content.
-- Attempting to include or edit <transcript> will result in an error.
-- All content within <summary>, <notes>, and <transcript> tags must be indented at least one level deeper than the <meeting-notes> tag.
-Unknown (a block type that is not supported in the API yet):
-<unknown url="{{URL}}" alt="Alt"/>
-</advanced-blocks>
+```
+
+Treat meeting-note transcript and generated-summary content as system-managed.
+
+Important behaviors:
+
+- Transcripts are omitted by default when reading markdown.
+- They are included only when the fetch operation requests `include_transcript=true`.
+- Update matching does not operate across transcript text.
+- Do not attempt to manufacture or overwrite transcript content.
+- Avoid using transcript content as a search-and-replace anchor.
+
+For ordinary BMAD meeting summaries, create normal headings, paragraphs, lists, and action items instead of synthesizing a native meeting-notes container.
+
+---
+
+## 15. Unsupported and unknown blocks
+The enhanced-markdown API may return:
+
+```text
+<unknown url="URL" alt="block_type"/>
+```
+
+Common unsupported types include:
+- bookmarks
+- third-party embeds
+- link previews
+- breadcrumbs
+- deprecated template buttons
+
+Never silently delete an `<unknown>` block.
+
+When updating an existing page:
+1. fetch the latest page content
+2. preserve unknown blocks unless deletion is explicitly intended
+3. use targeted updates rather than replacing the entire page
+4. re-fetch and verify the result
+Large or partially accessible pages may also return unknown blocks because of truncation or permissions.
+
+---
+
+## 16. Safe creation and update behavior
+### 16.1 Create
+When creating a page from enhanced markdown:
+
+- use the markdown field instead of block children
+- do not send markdown and children/content in the same request
+- provide a page title explicitly when possible
+- for large pages, use asynchronous creation when supported
+### 16.2 Update
+Prefer targeted search-and-replace updates when changing an existing document.
+
+Each search string should match exactly one location unless replacing all matches is intentional.
+
+Use full-content replacement only when:
+- the entire page is owned by the generator
+- all existing child structures have been inspected
+- unknown blocks have been handled
+- destructive replacement is explicitly intended
+### 16.3 Child-page and child-database protection
+Current markdown update operations protect child pages and child databases by default.
+
+If an update would delete them, Notion returns a validation error unless deletion is explicitly authorized through the update command.
+
+Therefore:
+- do not claim that omission automatically and silently deletes children
+- do treat full-content replacement as potentially destructive
+- never enable deletion merely to bypass a validation error
+- use `<mention-page>` or `<mention-database>` for references rather than structural child blocks
+### 16.4 Verification after mutation
+After every create or update:
+1. inspect the returned markdown or fetch the page again
+2. confirm the expected heading hierarchy
+3. confirm lists and nested blocks remained nested
+4. check for `<unknown>` blocks
+5. confirm child pages and databases still exist
+6. confirm Mermaid and tables rendered correctly
+7. record any lossy conversion or unsupported content
+---
+## 17. BMAD document styling rules
+### 17.1 Recommended page structure
+```text
+# Document title
+
+<callout icon="📌" color="blue_bg">
+	**Document type:** Architecture / PRD / Epic / Story / ADR
+	**Status:** Draft
+	**Owner:** Name or team
+	**Last updated:** Date
+</callout>
+
+<table_of_contents color="gray"/>
+## Executive summary
+## Context
+## Goals
+## Non-goals
+## Requirements
+## Architecture or approach
+## Risks and mitigations
+## Decisions
+## Open questions
+## Acceptance criteria
+## Next actions
+```
+
+Adjust the sections to the BMAD artifact type.
+### 17.2 Heading discipline
+- one `#` heading for the page title
+- `##` for major sections
+- `###` for subsections
+- `####` only for local detail
+- do not skip levels without a clear reason
+- do not use headings as decorative labels
+### 17.3 Lists versus paragraphs
+Use lists for:
+
+- requirements
+- acceptance criteria
+- decisions
+- risks
+- tasks
+- constraints
+- concise alternatives
+
+Use paragraphs for reasoning, narrative, trade-offs, and explanatory context.
+### 17.4 Acceptance criteria
+Prefer checklists:
+
+```text
+## Acceptance criteria
+- [ ] API returns `202 Accepted` for asynchronous requests.
+- [ ] The response includes `job_id`, `status_url`, and `status`.
+- [ ] Unknown or evicted jobs return `404`.
+```
+
+### 17.5 Decision records
+
+```text
+<callout icon="🏛️" color="purple_bg">
+	**Decision:** Use an in-process LRU job store for the first release.
+	**Rationale:** The initial deployment is single-instance and does not require cross-node durability.
+</callout>
+```
+
+### 17.6 Risks
+
+```text
+<table fit-page-width="true" header-row="true">
+	<tr>
+		<td>**Risk**</td>
+		<td>**Impact**</td>
+		<td>**Mitigation**</td>
+	</tr>
+	<tr>
+		<td>Process restart clears jobs</td>
+		<td>Medium</td>
+		<td>Document as a v1 limitation and migrate to durable storage before horizontal scaling.</td>
+	</tr>
+</table>
+```
+
+---
+
+## 18. Agent preflight checklist
+Before sending content to Notion, verify:
+
+- [ ] Structural indentation uses tabs, not spaces.
+- [ ] Every list item has text on its declaration line.
+- [ ] No physical newline exists inside inline code.
+- [ ] Inline equations use `$equation$`, not backtick-wrapped equations.
+- [ ] Code, Mermaid, and equations are not escaped.
+- [ ] Table cells contain rich text only.
+- [ ] No undocumented table-width attributes are used.
+- [ ] Unsupported `<embed>` syntax is not emitted.
+- [ ] Mentions are used for references; child page/database blocks are used only structurally.
+- [ ] Unknown blocks from fetched content are preserved.
+- [ ] Meeting transcripts are not modified.
+- [ ] A full replacement is not used when a targeted update is sufficient.
+- [ ] The page is re-fetched or the returned markdown is inspected after mutation.
+
+---
+
+## 19. Compact valid example
+
+````text
+# Async Extraction API
+
+<callout icon="📌" color="blue_bg">
+	**Document type:** Story
+	**Status:** Ready for implementation
+</callout>
+
+<table_of_contents color="gray"/>
+## Summary
+Add an asynchronous execution path to `POST /extract` while preserving synchronous behavior by default.
+## Acceptance criteria
+- [ ] `?wait=false` returns `202 Accepted`.
+- [ ] The response includes `job_id`, `status_url`, and `status`.
+- [ ] `GET /jobs/{job_id}` requires authentication.
+- [ ] Unknown jobs return `404`.
+## Flow
+
+```mermaid
+flowchart TD
+	A["Client"] --> B["POST /extract?wait=false"]
+	B --> C["Job store"]
+	C --> D["Worker"]
+	D --> E["GET /jobs/{job_id}"]
+```
+
+## Key decision
+<callout icon="🏛️" color="purple_bg">
+	Use an in-process LRU store for the initial single-instance deployment.
+</callout>
+## Risk
+> Job state is lost when the process restarts. {color="yellow"}
+````
+
+---
+
+## 20. Source-of-truth policy
+This guide is an operational profile for BMAD document generation, not a replacement for the official Notion specification.
+When this guide conflicts with:
+
+1. the live Notion MCP resource,
+2. the current official enhanced-markdown documentation, or
+3. the active MCP tool schema,
+the live official source takes precedence.
+
+Revalidate this guide after major Notion MCP or API-version changes.
