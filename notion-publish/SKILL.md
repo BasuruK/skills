@@ -11,10 +11,10 @@ description: 'Reads BMad-generated artifacts (briefs, PRDs, addendums, architect
 
 - **Read-only source.** Only use `read_file` / `grep_search` / `file_search` / `list_dir` on anything under `_bmad-output/**` (or wherever BMad artifacts live). Never call an edit/write tool on those paths. Do not reformat, reorder, or "fix" the source file — the transformation happens only in the Notion page you create.
 - **Never guess Notion schema.** Always `fetch` the destination database/page before writing properties. Property names, select options (Status, Category, etc.), and templates must come from the live fetch result, not assumption.
-- **Read the markdown spec every session.** Before generating any page content, `read_file` the local copy at `.agents/skills/notion-publish/enhanced-markdown-spec` (colocated with this skill). This environment does not expose a generic MCP resource-reading tool, so the Notion `notion://docs/enhanced-markdown-spec` resource cannot be fetched directly — the local copy is the source of truth instead. Do not hallucinate Notion-flavored Markdown syntax. If the local file is missing or looks stale/incomplete, ask the user to re-attach the resource (via VS Code's Add Context → MCP Resources, or a `#`-mention) and save it back to this path before proceeding.
+- **Read the markdown spec every session.** Before generating any page content, `read_file` the local copy at `.agents/skills/notion-publish/enhanced-markdown-spec` (colocated with this skill; it is the source of truth, not the `notion://docs/enhanced-markdown-spec` resource). Do not hallucinate Notion-flavored Markdown syntax. If the local file is missing or looks stale/incomplete, ask the user to re-attach the resource (via VS Code's Add Context → MCP Resources, or a `#`-mention) and save it back to this path before proceeding.
 - **Content-preserving, not summarizing.** You are re-styling and de-cluttering BMad process scaffolding — you are not allowed to drop substantive decisions, requirements, or rationale. When unsure whether something is "scaffolding" vs. content, keep it (in a toggle if it's verbose).
 - **A flat 1:1 copy-paste is a failure, not a shortcut.** If the finished Notion page is just the BMad markdown pasted in with headings promoted a level, Step 5's restructuring (callouts + emoji, toggles for secondary content, dividers, table conversion) was skipped. That is not an acceptable time-saving shortcut under any effort/size pressure — re-do the page rather than ship a wall of text.
-- **Real line breaks only — never author literal `\n` as two characters.** When composing large multi-line `content`/`new_str` values for `create-pages` or `update-page`, always type genuine line breaks (actual newlines in the parameter), never the two-character escape sequence `\n` as a stand-in for compactness. Notion's Markdown parser treats a stray backslash as an escape character (see the escaped-character list in the enhanced-markdown-spec); a literal `\n` that never became a real newline renders as a bare `n` with no line break, and everything that should have been separate blocks (headings, lists) collapses into one flattened paragraph with literal `##`/`###` text. See HALT CONDITIONS and VALIDATION CHECKLIST for the required post-write check.
+- **Real line breaks only — never author literal `\n` as two characters.** When composing large multi-line `content`/`new_str` values for `create-pages` or `update-page`, always type genuine line breaks (actual newlines in the parameter), never the two-character escape sequence `\n` as a stand-in for compactness. Notion's Markdown parser treats a stray backslash as an escape character (see the escaped-character list in the enhanced-markdown-spec); a literal `\n` that never became a real newline renders as a bare `n` with no line break, and everything that should have been separate blocks (headings, lists) collapses into one flattened paragraph with literal `##`/`###` text. See HALT CONDITIONS for the required post-write check.
 - **Chunk large writes.** Don't push an entire multi-thousand-word section in one `insert_content`/`update_content` call. Split by major section (roughly 2,000–4,000 characters per call) and verify each chunk rendered correctly before appending the next.
 
 ## EXECUTION 
@@ -99,28 +99,7 @@ Re-structure for Notion:
 - Use dividers between major sections for the "clear separation" look shown in the reference database.
 - This restructuring is mandatory for every page, regardless of source doc length — do not fall back to pasting the source markdown near-verbatim (with only heading-level promotion and table conversion) just because the doc is long or the session is running long. A long doc needs *more* toggles/callouts, not fewer.
 
-**Emoji guide for common BMad section names** (use judgment for headings not listed — pick the closest semantic match, stay consistent within one page):
-
-| Section heading (or synonym)          | Emoji |
-|----------------------------------------|:-----:|
-| Overview / Executive Summary           | 🎯 |
-| Goals / Objectives                     | 📋 |
-| Background / Context                   | 📚 |
-| Problem Statement                      | ❗ |
-| Technical Details / Implementation     | 🔧 |
-| Architecture / Design                  | 🏗️ |
-| Performance Considerations             | ⚡ |
-| Testing Strategy / QA                  | ✏️ |
-| Risks / Assumptions                    | ⚠️ |
-| Non-Goals / Out of Scope               | 🚫 |
-| Open Questions                         | ❓ |
-| Timeline / Milestones                  | 📅 |
-| Metrics / Success Criteria             | 📊 |
-| Glossary / Definitions                 | 📖 |
-| Decisions / Rationale                  | 🧭 |
-| Stakeholders                           | 👥 |
-| Dependencies                           | 🔗 |
-| Appendix / References                  | 📎 |
+**Emoji guide for common BMad section names** (use judgment for headings not listed — pick the closest semantic match, stay consistent within one page): Overview/Executive Summary 🎯, Goals/Objectives 📋, Background/Context 📚, Problem Statement ❗, Technical Details/Implementation 🔧, Architecture/Design 🏗️, Performance Considerations ⚡, Testing Strategy/QA ✏️, Risks/Assumptions ⚠️, Non-Goals/Out of Scope 🚫, Open Questions ❓, Timeline/Milestones 📅, Metrics/Success Criteria 📊, Glossary/Definitions 📖, Decisions/Rationale 🧭, Stakeholders 👥, Dependencies 🔗, Appendix/References 📎.
 
 ### Step 6 — Diff pass for updates (existing pages only)
 
@@ -128,7 +107,7 @@ Skip this step entirely when Step 4 found no existing page — new pages don't n
 
 - Fetch the existing Notion page's full current content and properties via `fetch`/`notion-fetch` before writing anything.
 - Compare the existing page against the freshly transformed content from Step 5, section by section (matching by callout/section heading), to identify: sections that changed, sections newly added, sections removed from the source (never delete substantive Notion content without confirming — see HARD RULES), and, for Projects/Tasks, any change in the epic's/story's status, priority, or other tracked property versus what's currently set in Notion.
-- **Delegate this diff computation to a subagent running a smaller/cheaper model** (e.g. Haiku, Gemini Flash, or a GPT mini-class model) — comparing old vs. new text and summarizing changes is low-complexity and doesn't need the primary model's full reasoning budget. Give the subagent the existing page content and the newly transformed content, and have it return: (1) a structured list of added/changed/removed sections, (2) any epic/story status or property transitions detected, and (3) a short human-readable changelog line. The primary session applies the result. If subagent delegation is not available in the current environment, the primary model should perform the diff itself. Subagent delegation is an optimization, not a requirement.
+- **Delegate this diff computation to a subagent running a smaller/cheaper model** (e.g. Haiku, Gemini Flash, or a GPT mini-class model) if available — comparing old vs. new text and summarizing changes doesn't need the primary model's full reasoning budget. Give the subagent the existing page content and the newly transformed content, and have it return: (1) a structured list of added/changed/removed sections, (2) any epic/story status or property transitions detected, and (3) a short human-readable changelog line. The primary session applies the result; otherwise perform the diff inline.
 - Apply the diff via `notion-update-page`: update only the sections/blocks that changed, update any changed properties (Status, epic/story progress, etc.), and append a **timestamped changelog entry** (current date/time plus a one-line summary, e.g. "2026-07-10 — Story status: To Do → In Progress; Acceptance Criteria section updated") to a "Change Log" toggle at the bottom of the page. Never delete prior changelog entries.
 - If the diff can't confidently map old sections to new ones (e.g. the source was restructured wholesale), HALT and ask the user whether to do a full content replace or a manual reconciliation.
 
@@ -145,7 +124,7 @@ Map only to property names/options confirmed in Step 2/3.
 - Use `notion-create-pages` with the resolved `data_source_id` as parent, the page icon set to the emoji matching the doc's primary type (e.g. 📄 for a PRD, 📝 for a brief, 🗂️ for a Project/epic, ✅ for a Task/story), and the transformed content.
 - If Step 4 found an existing page to update instead, use `notion-update-page` on that page with the diffed changes from Step 6 rather than creating a new one.
 - For an epics-and-stories doc: create all Project pages for the epics first, then create the Task pages for their stories so the relation property can point at an already-existing Project page. Before creating Project pages for epics, perform the same duplicate check described in Step 4 against the Projects database. If a matching Project page already exists for an epic, reuse it for the Task relation rather than creating a new one.
-- **Chunk, then verify each chunk.** For any page whose content exceeds roughly 4,000 characters, split the write into multiple `create-pages`/`insert_content` calls (per major section) rather than one giant call. After each call that wrote more than ~2,000 characters, run a spot-check — either `notion-fetch` the page or a `notion-search` scoped to that `page_url` with a query drawn from text you just wrote — and confirm the returned snippet reads as clean prose with real headings, not literal `##`/`###`/`\n`/`n`-run artifacts. If corruption is found, redo that chunk with real line breaks before writing the next one or reporting completion.
+- **Chunk, then verify each chunk.** For any page whose content exceeds roughly 4,000 characters, split the write into multiple `create-pages`/`insert_content` calls (per major section) rather than one giant call. After each call that wrote more than ~2,000 characters, spot-check it (`notion-fetch` the page, or a `notion-search` scoped to that `page_url`) for the corruption described in HARD RULES; if found, redo that chunk with real line breaks before continuing.
 
 ### Step 9 — Report back
 
@@ -165,22 +144,5 @@ Give the user:
 - An epic's stories can't be unambiguously parsed (e.g. unclear which epic a story belongs to) → ask rather than guessing the Project relation.
 - The local `.agents/skills/notion-publish/enhanced-markdown-spec` file is missing → stop and ask the user to attach/save the spec to that path (this environment cannot fetch the `notion://docs/enhanced-markdown-spec` MCP resource directly); do not proceed with page generation using guessed syntax.
 - The Step 6 diff pass can't confidently map existing Notion content to the newly transformed content (e.g. wholesale restructuring) → ask whether to do a full replace or a manual reconciliation.
-- A post-write spot-check (Step 8) shows literal Markdown syntax or `n`-run artifacts instead of rendered blocks → the write was corrupted (almost always caused by authoring literal `\n` instead of real line breaks); stop reporting success, redo that chunk with real line breaks, and re-verify before continuing.
+- A post-write spot-check (Step 8) shows the `\n`-corruption described in HARD RULES → stop reporting success, redo that chunk with real line breaks, and re-verify before continuing.
 - `replace_content` reports it would delete existing child pages/databases → do not set `allow_deleting_content: true` reflexively. First re-check that every existing child page/database is represented with a `<page url="...">`/`<database url="...">` tag on its own line (not folded into a paragraph by the same literal-`\n` mistake above); only ask the user for explicit confirmation if deletion is actually intended.
-
-## VALIDATION CHECKLIST
-
-- [ ] Source file on disk is byte-for-byte unchanged (no write/edit tool used on it).
-- [ ] Notion schema was freshly fetched, not assumed.
-- [ ] `.agents/skills/notion-publish/enhanced-markdown-spec` was read this session before generating content.
-- [ ] Large content was chunked (~2,000–4,000 chars per write) and each chunk was spot-checked (fetch or page-scoped search) to confirm real rendered blocks, not literal `##`/`\n`/`n`-run artifacts.
-- [ ] The finished page is NOT a flat 1:1 copy of the source markdown — every major section has a matched emoji + callout, with dividers between sections, and secondary/reference material is in toggles.
-- [ ] Code blocks kept their language tag and exact content.
-- [ ] Tables and checklists converted to native Notion blocks, not flattened to text.
-- [ ] No BMad tool scaffolding (HTML comments, elicitation prompts, agent metadata) leaked into the Notion page.
-- [ ] Properties match the destination schema's actual names/options exactly.
-- [ ] Duplicate check was performed before creating a new page.
-- [ ] For epics/stories: every epic became a Project and every story became a Task correctly related to its epic's Project — none dropped or merged.
-- [ ] For updates to an existing page: the Step 6 diff pass ran against the live page content before writing, and a timestamped changelog entry was appended (not overwritten).
-- [ ] Epic/story status or property transitions detected in the diff were reflected in both the Notion property and the changelog entry.
-- [ ] Page link(s) returned to the user with a short mapping summary.
