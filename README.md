@@ -6,7 +6,9 @@
 
 <p align="center">Teach a man to skill, and he'll never go skill-less.</p>
 
-A collection of [Claude Code skills](https://docs.claude.com/en/docs/claude-code/skills), installable in one command.
+A collection of traditional software engineers who still want to code.
+
+If you are here to see AI generate all your code, then this repo is not for you :p
 
 ## Install
 
