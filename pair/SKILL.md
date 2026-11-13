@@ -29,7 +29,7 @@ Run one step per turn, opening with `Step K of N: <name> (~M min)`:
    - *Low surprisal* (imports, types, wiring, repetitive test setup): Batch the whole step cleanly in one edit.
 3. **Annotate in chat:** Use numbered markers (`[1]`) in the chat snippet to teach unfamiliar syntax; save the file with one-line *why* invariant comments only.
 4. **Verify:** Run the narrowest typecheck or test on the slice and print the exact pass/fail line.
-5. **Hand off:** End with one bounded next action (`Implement TODO(you), or reply "draft" for Step K+1`).
+5. **Hand off:** End with one bounded next action: while a `TODO(you)` crux remains open, offer `Implement TODO(you), or reply "draft" to write it and complete Step K`; once all `TODO(you)` cruxes in Step K are resolved, offer `Step K+1`.
    *Done when:* Every step in the tracer bullet passes its check and every `TODO(you)` crux is resolved.
 
 ## UID Prose (Reference — apply to every sentence)
