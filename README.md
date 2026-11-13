@@ -17,7 +17,6 @@ npx @basuruk/skills --global # installs into ~/.claude/skills
 
 ## Skills
 
-- **notion-publish** — Publishes BMad-generated docs (briefs, PRDs, architecture, epics/stories) into Notion with proper formatting, without touching the source files.
 - **pair** — Tracer-bullet pair programming and UID prose for step-by-step co-coding, teaching, and readable architecture explanations.
 
 ## License

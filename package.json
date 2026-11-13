@@ -1,6 +1,6 @@
 {
   "name": "@basuruk/skills",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Install basuruk's Claude Code skills with npx",
   "type": "module",
   "bin": "./bin/cli.js",
