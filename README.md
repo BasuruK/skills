@@ -5,7 +5,6 @@
 <h1 align="center">Basuruk Skills</h1>
 
 <p align="center">Teach a man to skill, and he'll never go skill-less.</p>
-
 <p align="center">A collection of skill for traditional software engineers who still want to code.</p>
 
 ~ _If you are here to see AI generate all your code, then this repo is not for you :p_ 
