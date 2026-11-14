@@ -13,9 +13,25 @@
 ## Install
 
 ```bash
-npx @basuruk/skills          # installs into ./.claude/skills
-npx @basuruk/skills --global # installs into ~/.claude/skills
+npx @basuruk/skills          # interactive: you choose the agents
+npx @basuruk/skills --global # install for the current user instead of the project
 ```
+
+Run it without arguments and it opens a picker: the agents detected on your machine
+come first, then a shortlist of popular ones, with every supported agent one
+keystroke away. Skills are placed with [Vercel's skills CLI](https://github.com/vercel-labs/skills),
+so each agent gets them in its own directory and the install is tracked in
+`skills-lock.json`.
+
+Already know what you want? Skip the prompts:
+
+```bash
+npx @basuruk/skills --agent claude-code --agent codex  # specific agents
+npx @basuruk/skills --all                             # every agent detected
+npx @basuruk/skills --list                            # show the skills in this package
+```
+
+Requires Node 22.20 or later. Telemetry is off.
 
 ## Skills
 
