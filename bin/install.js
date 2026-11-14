@@ -19,10 +19,17 @@ export const GITHUB_SOURCE = 'BasuruK/skills';
  * Returns the process exit code. `prompts` is the @clack/prompts module, passed
  * in so the flow can be driven without a terminal.
  */
-export async function run(options, { prompts, log = console.log, cwd = process.cwd(), interactive } = {}) {
-  const supported = getSupportedAgents();
-  const detected = (await detectAgents({ cwd })).agents;
-
+export async function run(
+  options,
+  {
+    prompts,
+    log = console.log,
+    cwd = process.cwd(),
+    interactive,
+    detected: detectedOverride,
+  } = {},
+) {
+  const scope = options.global ? 'global' : 'project';
   const source = options.fromGithub ? GITHUB_SOURCE : pkgRoot;
   const resolved = await resolveSource(source, { cwd });
 
@@ -34,8 +41,11 @@ export async function run(options, { prompts, log = console.log, cwd = process.c
       return 0;
     }
 
+    const supported = getSupportedAgents();
+    const detected = detectedOverride ?? (await detectAgents({ cwd })).agents;
+
     const available = resolved.skills.map((skill) => skill.name);
-    const wanted = options.skills.length > 0 ? options.skills : available;
+    const wanted = [...new Set(options.skills.length > 0 ? options.skills : available)];
     const unknown = wanted.filter((name) => !available.includes(name));
     if (unknown.length > 0) {
       throw new Error(
@@ -47,6 +57,7 @@ export async function run(options, { prompts, log = console.log, cwd = process.c
       options,
       supported,
       detected,
+      scope,
       interactive:
         interactive ?? (Boolean(prompts) && process.stdin.isTTY && process.stdout.isTTY),
     });
@@ -57,11 +68,14 @@ export async function run(options, { prompts, log = console.log, cwd = process.c
 
     let agents = decision.agents;
     if (decision.prompt) {
-      const picked = await promptForAgents(supported, detected, prompts);
+      if (!prompts) {
+        throw new Error('Cannot ask which agents to install into: no prompt module was given.');
+      }
+      const picked = await promptForAgents(supported, detected, prompts, { scope });
       if (prompts.isCancel(picked)) {
         return 130;
       }
-      if (picked.length === 0) {
+      if (!Array.isArray(picked) || picked.length === 0) {
         throw new Error('No agents selected.');
       }
       agents = picked;
@@ -71,14 +85,15 @@ export async function run(options, { prompts, log = console.log, cwd = process.c
       cwd,
       skills: wanted,
       agents,
-      scope: options.global ? 'global' : 'project',
+      scope,
       mode: options.copy ? 'copy' : 'auto',
-      lockfile: true,
+      // Only the GitHub source is worth tracking; a path on this machine is not.
+      lockfile: options.fromGithub,
       telemetry: false,
       onWarning: (warning) => log(`warning: ${warning.message}`),
     });
 
-    report(result, { log, scope: options.global ? 'global' : 'project' });
+    report(result, { log, scope });
 
     if (!options.fromGithub) {
       log(
@@ -88,7 +103,12 @@ export async function run(options, { prompts, log = console.log, cwd = process.c
 
     return result.failed.length > 0 ? 1 : 0;
   } finally {
-    await resolved.dispose();
+    try {
+      await resolved.dispose();
+    } catch (cleanupError) {
+      const reason = cleanupError instanceof Error ? cleanupError.message : String(cleanupError);
+      log(`warning: cleanup failed: ${reason}`);
+    }
   }
 }
 
@@ -110,5 +130,9 @@ function report(result, { log, scope }) {
     return;
   }
 
-  log(`Installed ${result.installed.length} skill${result.installed.length === 1 ? '' : 's'} (${scope}).`);
+  const skills = new Set(result.installed.map((target) => target.skill)).size;
+  const locations = result.installed.length;
+  log(
+    `Installed ${skills} skill${skills === 1 ? '' : 's'} in ${locations} location${locations === 1 ? '' : 's'} (${scope}).`,
+  );
 }

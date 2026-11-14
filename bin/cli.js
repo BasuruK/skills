@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import './check-node.js';
 import * as p from '@clack/prompts';
 import { HELP, parseArgs } from './args.js';
 import { formatError } from './errors.js';
@@ -44,4 +45,5 @@ if (code === 130) {
   p.outro('Finished with errors.');
 }
 
-process.exit(code);
+// Set the code instead of calling process.exit, so pending writes are flushed.
+process.exitCode = code;

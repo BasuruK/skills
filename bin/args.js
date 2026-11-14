@@ -31,8 +31,8 @@ Installs the skills in this package into the coding agents of your choice.
 
 Options:
   -g, --global          install for the current user instead of the project
-  -a, --agent <id>      target an agent (repeatable), e.g. claude-code, codex
-  -s, --skill <name>    install only this skill (repeatable); default: all
+  -a, --agent <id...>   target agents, e.g. claude-code codex
+  -s, --skill <name...> install only these skills; default: all
       --all             install into every detected agent, without prompting
       --copy            copy files instead of symlinking them
       --from-github     install from the BasuruK/skills repository instead of
@@ -65,11 +65,27 @@ export function parseArgs(argv) {
 
     if (VALUE_OPTIONS.has(name)) {
       const key = VALUE_OPTIONS.get(name);
-      const value = inlineValue ?? argv[++index];
-      if (!value) {
+      const values = [];
+
+      if (inlineValue !== undefined) {
+        // The = form takes exactly one value, like --agent=codex.
+        values.push(inlineValue);
+      } else {
+        // The space form takes every name that follows, until the next option.
+        while (index + 1 < argv.length && !argv[index + 1].startsWith('-')) {
+          values.push(argv[++index]);
+        }
+      }
+
+      if (values.length === 0) {
         throw new Error(`${name} needs a value`);
       }
-      options[key].push(value);
+
+      for (const value of values) {
+        if (!options[key].includes(value)) {
+          options[key].push(value);
+        }
+      }
       continue;
     }
 

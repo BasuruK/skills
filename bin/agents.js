@@ -27,24 +27,51 @@ export const POPULAR_AGENTS = [
 
 const SHOW_ALL = '__show_all__';
 
+/** Agents that can hold skills outside a project. */
+function canInstallGlobally(agent) {
+  return Boolean(agent.globalSkillsDir);
+}
+
 /**
  * Decide the target agents without asking anything.
  *
  * Returns `{ agents, source }` when the decision is already made, `{ prompt: true }`
  * when the user has to choose, or `{ error }` when the request cannot be honoured.
  */
-export function resolveAgents({ options, supported, detected, interactive }) {
+export function resolveAgents({
+  options,
+  supported,
+  detected,
+  interactive,
+  scope = 'project',
+}) {
   const known = new Set(supported.map((agent) => agent.id));
+  const usable = supported.filter(
+    (agent) => scope !== 'global' || canInstallGlobally(agent),
+  );
+  const usableIds = usable.map((agent) => agent.id);
 
   if (options.agents.length > 0) {
+    if (options.all) {
+      return { error: '--all cannot be combined with --agent; pick one.' };
+    }
+
     const unknown = options.agents.filter((id) => !known.has(id));
     if (unknown.length > 0) {
       return { error: `Unknown agent${unknown.length > 1 ? 's' : ''}: ${unknown.join(', ')}` };
     }
+
+    const projectOnly = options.agents.filter((id) => !usableIds.includes(id));
+    if (projectOnly.length > 0) {
+      return {
+        error: `${projectOnly.join(', ')} cannot be installed globally — it only reads skills from a project.`,
+      };
+    }
+
     return { agents: options.agents, source: 'explicit' };
   }
 
-  const detectedIds = detected.map((agent) => agent.id);
+  const detectedIds = detected.map((agent) => agent.id).filter((id) => usableIds.includes(id));
 
   if (options.all) {
     if (detectedIds.length === 0) {
@@ -57,7 +84,17 @@ export function resolveAgents({ options, supported, detected, interactive }) {
     if (detectedIds.length > 0) {
       return { agents: detectedIds, source: 'detected' };
     }
-    return { agents: ['claude-code'], source: 'default' };
+
+    const fallback = usableIds.includes('claude-code') ? 'claude-code' : usableIds[0];
+    if (!fallback) {
+      return { error: 'No agents are supported by this version of the skills library.' };
+    }
+    return { agents: [fallback], source: 'default' };
+  }
+
+  // One agent on the machine needs no question asked.
+  if (detectedIds.length === 1) {
+    return { agents: detectedIds, source: 'detected' };
   }
 
   return { prompt: true };
@@ -78,32 +115,34 @@ export function buildAgentChoices(supported, detected) {
   const popularOptions = supported
     .filter((agent) => POPULAR_AGENTS.includes(agent.id) && !detectedIds.has(agent.id))
     .map(toOption);
-  const restOptions = supported
-    .filter((agent) => !POPULAR_AGENTS.includes(agent.id) && !detectedIds.has(agent.id))
-    .map(toOption);
 
   return {
     detected: detectedOptions,
     popular: popularOptions,
-    rest: restOptions,
     all: supported.map(toOption),
   };
 }
 
 /** Ask the user which agents to install into. Returns the chosen agent ids. */
-export async function promptForAgents(supported, detected, prompts) {
-  const choices = buildAgentChoices(supported, detected);
-  const initialValues = choices.detected.map((option) => option.value);
+export async function promptForAgents(supported, detected, prompts, { scope = 'project' } = {}) {
+  const usable = supported.filter(
+    (agent) => scope !== 'global' || canInstallGlobally(agent),
+  );
+  const choices = buildAgentChoices(usable, detected);
 
   const first = await prompts.groupMultiselect({
     message: 'Install the skills into which agents?',
     options: {
       'Detected on this machine': choices.detected,
       Popular: choices.popular,
-      More: [{ value: SHOW_ALL, label: 'Show every supported agent' }],
+      'Show all': [{ value: SHOW_ALL, label: 'Show every supported agent' }],
     },
-    initialValues,
-    required: false,
+    // Nothing is ticked: the user picks, an Enter key does not pick for them.
+    initialValues: [],
+    // Start on a real agent, not on a group header: a space on a header
+    // selects every agent in that group.
+    cursorAt: choices.detected[0]?.value ?? choices.popular[0]?.value,
+    required: true,
   });
 
   if (prompts.isCancel(first) || !Array.isArray(first)) {
@@ -118,7 +157,7 @@ export async function promptForAgents(supported, detected, prompts) {
     message: 'Install the skills into which agents?',
     options: { 'Every supported agent': choices.all },
     initialValues: first.filter((id) => id !== SHOW_ALL),
-    required: false,
+    required: true,
   });
 
   return second;

@@ -4,3 +4,11 @@
 .github/instructions/codacy.instructions.md
 node_modules/
 *.tgz
+
+#Installer output when it runs inside this repo
+skills-lock.json
+.claude/skills/
+.agents/skills/
+
+#Never commit an npm token
+.npmrc

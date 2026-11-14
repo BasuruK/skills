@@ -34,16 +34,19 @@ test('installs into an explicitly named agent', async () => {
 
 test('installs into every agent the user picks', async () => {
   const cwd = await workspace();
+  const logs = [];
   const code = await run(parseArgs([]), {
     cwd,
     prompts: stubPrompts(['claude-code', 'codex']),
-    log: () => {},
+    log: (line) => logs.push(line),
+    detected: [],
     interactive: true,
   });
 
   assert.equal(code, 0);
   assert.ok(existsSync(path.join(cwd, '.claude/skills/pair/SKILL.md')));
   assert.ok(existsSync(path.join(cwd, '.agents/skills/pair/SKILL.md')));
+  assert.ok(logs.some((line) => line.includes('Installed 1 skill in 2 locations')));
 });
 
 test('returns 130 when the picker is cancelled', async () => {
@@ -52,6 +55,7 @@ test('returns 130 when the picker is cancelled', async () => {
     cwd,
     prompts: stubPrompts(undefined),
     log: () => {},
+    detected: [],
     interactive: true,
   });
 
@@ -62,8 +66,22 @@ test('returns 130 when the picker is cancelled', async () => {
 test('refuses to install when no agent is picked', async () => {
   const cwd = await workspace();
   await assert.rejects(
-    run(parseArgs([]), { cwd, prompts: stubPrompts([]), interactive: true }),
+    run(parseArgs([]), {
+      cwd,
+      prompts: stubPrompts([]),
+      log: () => {},
+      detected: [],
+      interactive: true,
+    }),
     /No agents selected/,
+  );
+});
+
+test('says so when it has no way to ask', async () => {
+  const cwd = await workspace();
+  await assert.rejects(
+    run(parseArgs([]), { cwd, log: () => {}, detected: [], interactive: true }),
+    /no prompt module was given/,
   );
 });
 
@@ -72,6 +90,30 @@ test('refuses an unknown skill name', async () => {
   await assert.rejects(
     run(parseArgs(['--skill', 'nope']), { cwd, log: () => {}, interactive: false }),
     /Unknown skill: nope/,
+  );
+});
+
+test('refuses --all together with --agent', async () => {
+  const cwd = await workspace();
+  await assert.rejects(
+    run(parseArgs(['--all', '--agent', 'claude-code']), {
+      cwd,
+      log: () => {},
+      interactive: false,
+    }),
+    /--all cannot be combined with --agent/,
+  );
+});
+
+test('refuses a project-only agent for a global install', async () => {
+  const cwd = await workspace();
+  await assert.rejects(
+    run(parseArgs(['--agent', 'eve', '--global']), {
+      cwd,
+      log: () => {},
+      interactive: false,
+    }),
+    /eve cannot be installed globally/,
   );
 });
 
@@ -95,6 +137,26 @@ test('installs only the requested skill', async () => {
   assert.equal(code, 0);
   const installed = await readFile(path.join(cwd, '.claude/skills/pair/SKILL.md'), 'utf8');
   assert.match(installed, /name: pair/);
+});
+
+test('installs a repeated skill only once', async () => {
+  const cwd = await workspace();
+  const logs = [];
+  const code = await run(parseArgs(['--skill', 'pair', '--skill', 'pair', '--agent', 'claude-code']), {
+    cwd,
+    log: (line) => logs.push(line),
+    interactive: false,
+  });
+
+  assert.equal(code, 0);
+  assert.equal(logs.filter((line) => line.includes('pair → claude-code')).length, 1);
+});
+
+test('writes no lock file for the package on disk', async () => {
+  const cwd = await workspace();
+  await run(parseArgs(['--agent', 'claude-code']), { cwd, log: () => {}, interactive: false });
+
+  assert.equal(existsSync(path.join(cwd, 'skills-lock.json')), false);
 });
 
 test('reports the failure when nothing was installed', async (t) => {
