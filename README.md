@@ -43,11 +43,13 @@ Publishing is automated. Push a `v*` tag and the [publish workflow](.github/work
 via [trusted publishing](https://docs.npmjs.com/trusted-publishers/) (OIDC — no npm token in the repo).
 
 ```bash
-npm version patch                          # bump package.json to 1.1.1
-git push && git tag v1.1.1 && git push origin v1.1.1
+npm version patch        # bumps package.json to 1.1.1, commits and tags v1.1.1
+git push && git push origin v1.1.1
 ```
 
-The tag must match `version` in `package.json` — the workflow fails otherwise.
+The tag must match `version` in `package.json` — the workflow fails otherwise. A
+prerelease version such as `1.2.0-beta.1` is published under the `next` tag
+instead of `latest`.
 
 > Adding a skill? Add its folder to `files` in `package.json`, otherwise it won't ship.
 

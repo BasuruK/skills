@@ -28,13 +28,21 @@ jobs:
             echo "::error::Tag $GITHUB_REF_NAME does not match package.json version $PKG"
             exit 1
           fi
+          echo "VERSION=$PKG" >> "$GITHUB_ENV"
 
       # Trusted publishing needs npm CLI >= 11.5.1; node 24 ships 11.19 but pin latest.
       - name: Install latest npm
         run: npm install -g npm@latest
 
       - name: Publish
-        run: npm publish --access public
+        run: |
+          if [[ "$VERSION" == *-* ]]; then
+            echo "Prerelease $VERSION — publishing under the 'next' tag."
+            npm publish --access public --tag next
+          else
+            npm publish --access public
+          fi
         env:
+          VERSION: ${{ env.VERSION }}
           # Must be empty: setup-node writes a placeholder token that breaks OIDC exchange.
           NODE_AUTH_TOKEN: ''
