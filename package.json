@@ -3,13 +3,24 @@
   "version": "1.1.0",
   "description": "Install basuruk's Claude Code skills with npx",
   "type": "module",
-  "bin": "./bin/cli.js",
+  "bin": {
+    "skills": "bin/cli.js"
+  },
   "engines": {
     "node": ">=18"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/basuruk/skills"
+    "url": "git+https://github.com/BasuruK/skills.git"
+  },
+  "files": [
+    "bin/",
+    "pair/",
+    "LICENSE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }
