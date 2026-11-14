@@ -17,7 +17,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Verify tag matches package version
@@ -29,7 +29,12 @@ jobs:
             exit 1
           fi
 
+      # Trusted publishing needs npm CLI >= 11.5.1; node 24 ships 11.19 but pin latest.
+      - name: Install latest npm
+        run: npm install -g npm@latest
+
       - name: Publish
-        run: npm publish --provenance --access public
+        run: npm publish --access public
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # Must be empty: setup-node writes a placeholder token that breaks OIDC exchange.
+          NODE_AUTH_TOKEN: ''
