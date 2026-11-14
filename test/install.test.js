@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
-import { mkdtemp, readFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -95,4 +95,34 @@ test('installs only the requested skill', async () => {
   assert.equal(code, 0);
   const installed = await readFile(path.join(cwd, '.claude/skills/pair/SKILL.md'), 'utf8');
   assert.match(installed, /name: pair/);
+});
+
+test('reports the failure when nothing was installed', async (t) => {
+  if (typeof process.getuid === 'function' && process.getuid() === 0) {
+    t.skip('root ignores directory permissions');
+    return;
+  }
+
+  const cwd = await workspace();
+  const skillsDir = path.join(cwd, '.claude/skills');
+  await mkdir(skillsDir, { recursive: true });
+  await chmod(skillsDir, 0o555);
+
+  const logs = [];
+  try {
+    const code = await run(parseArgs(['--agent', 'claude-code']), {
+      cwd,
+      log: (line) => logs.push(line),
+      interactive: false,
+    });
+
+    assert.equal(code, 1);
+    assert.ok(
+      logs.some((line) => line.startsWith('✗')),
+      `the failure is reported, got: ${logs.join(' | ')}`,
+    );
+    assert.ok(logs.some((line) => line.includes('Nothing was installed.')));
+  } finally {
+    await chmod(skillsDir, 0o755);
+  }
 });

@@ -43,8 +43,8 @@ Publishing is automated. Push a `v*` tag and the [publish workflow](.github/work
 via [trusted publishing](https://docs.npmjs.com/trusted-publishers/) (OIDC — no npm token in the repo).
 
 ```bash
-npm version patch        # bumps package.json to 1.1.1, commits and tags v1.1.1
-git push && git push origin v1.1.1
+npm version patch        # bumps package.json, commits and tags v<version>
+git push && git push origin "v$(node -p "require('./package.json').version")"
 ```
 
 The tag must match `version` in `package.json` — the workflow fails otherwise. A

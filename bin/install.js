@@ -4,7 +4,6 @@ import {
   detectAgents,
   getSupportedAgents,
   installSkills,
-  isDiagnostic,
   resolveSource,
 } from 'skills';
 import { promptForAgents, resolveAgents } from './agents.js';
@@ -94,11 +93,6 @@ export async function run(options, { prompts, log = console.log, cwd = process.c
 }
 
 function report(result, { log, scope }) {
-  if (result.installed.length === 0) {
-    log('Nothing was installed.');
-    return;
-  }
-
   for (const target of result.installed) {
     log(`✓ ${target.skill} → ${target.agent} (${target.path})`);
   }
@@ -111,7 +105,10 @@ function report(result, { log, scope }) {
     log(`✗ ${failure.skill} → ${failure.agent}: ${failure.message}`);
   }
 
+  if (result.installed.length === 0) {
+    log('Nothing was installed.');
+    return;
+  }
+
   log(`Installed ${result.installed.length} skill${result.installed.length === 1 ? '' : 's'} (${scope}).`);
 }
-
-export { isDiagnostic };

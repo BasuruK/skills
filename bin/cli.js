@@ -1,18 +1,15 @@
 #!/usr/bin/env node
 import * as p from '@clack/prompts';
 import { HELP, parseArgs } from './args.js';
-import { isDiagnostic, run } from './install.js';
+import { formatError } from './errors.js';
+import { run } from './install.js';
 
 function fail(error) {
-  if (isDiagnostic(error)) {
-    p.log.error(error.message);
-    if (error.fix) {
-      p.log.info(error.fix);
-    }
-    return 1;
+  const { message, fix } = formatError(error);
+  p.log.error(message);
+  if (fix) {
+    p.log.info(fix);
   }
-
-  p.log.error(error instanceof Error ? error.message : String(error));
   return 1;
 }
 
