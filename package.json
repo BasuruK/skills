@@ -1,13 +1,13 @@
 {
   "name": "@basuruk/skills",
   "version": "1.1.0",
-  "description": "Install basuruk's Claude Code skills with npx",
+  "description": "Install basuruk's agent skills into the coding agents of your choice",
   "type": "module",
   "bin": {
-    "skills": "bin/cli.js"
+    "basuruk-skills": "bin/cli.js"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22.20.0"
   },
   "license": "Apache-2.0",
   "repository": {
@@ -18,9 +18,17 @@
     "bin/",
     "pair/",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md"
   ],
+  "scripts": {
+    "test": "node --test test/"
+  },
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "@clack/prompts": "^1.9.0",
+    "skills": "^1.8.1"
   }
 }

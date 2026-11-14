@@ -1,25 +1,50 @@
 #!/usr/bin/env node
-import fs from "node:fs";
-import os from "node:os";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import * as p from '@clack/prompts';
+import { HELP, parseArgs } from './args.js';
+import { isDiagnostic, run } from './install.js';
 
-const pkgRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-const global = process.argv.includes("--global") || process.argv.includes("-g");
-const dest = path.join(global ? os.homedir() : process.cwd(), ".claude", "skills");
+function fail(error) {
+  if (isDiagnostic(error)) {
+    p.log.error(error.message);
+    if (error.fix) {
+      p.log.info(error.fix);
+    }
+    return 1;
+  }
 
-const skills = fs
-  .readdirSync(pkgRoot, { withFileTypes: true })
-  .filter((d) => d.isDirectory() && fs.existsSync(path.join(pkgRoot, d.name, "SKILL.md")))
-  .map((d) => d.name);
+  p.log.error(error instanceof Error ? error.message : String(error));
+  return 1;
+}
 
-if (skills.length === 0) {
-  console.error("No skills found in this package.");
+let options;
+try {
+  options = parseArgs(process.argv.slice(2));
+} catch (error) {
+  console.error(error instanceof Error ? error.message : String(error));
+  console.error('\nRun with --help to see the options.');
   process.exit(1);
 }
 
-fs.mkdirSync(dest, { recursive: true });
-for (const skill of skills) {
-  fs.cpSync(path.join(pkgRoot, skill), path.join(dest, skill), { recursive: true });
-  console.log(`✓ installed ${skill} -> ${path.join(dest, skill)}`);
+if (options.help) {
+  console.log(HELP);
+  process.exit(0);
 }
+
+p.intro('basuruk skills');
+
+let code;
+try {
+  code = await run(options, { prompts: p });
+} catch (error) {
+  code = fail(error);
+}
+
+if (code === 130) {
+  p.cancel('Cancelled.');
+} else if (code === 0) {
+  p.outro('Done.');
+} else {
+  p.outro('Finished with errors.');
+}
+
+process.exit(code);
