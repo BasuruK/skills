@@ -5,55 +5,67 @@
 <h1 align="center">Basuruk's Engineering Skills</h1>
 
 <p align="center">Teach a man to skill, and he'll never go skill-less.</p>
-<p align="center">A collection of skill for traditional software engineers who still want to code.</p>
+<p align="center">A collection of skills for traditional software engineers who still want to code.</p>
 
 <p align="center" style="color: blue; font-style: italic;">If you are here to see AI generate all your code, then this repo is not for you :p</p>
 
+[![skills.sh](https://skills.sh/b/BasuruK/skills)](https://skills.sh/BasuruK/skills)
+
 ## Install
 
-```bash
-npx @basuruk/skills          # interactive: you choose the agents
-npx @basuruk/skills --global # install for the current user instead of the project
-```
-
-Already know what you want? Skip the prompts:
+Installs with the [skills CLI](https://github.com/vercel-labs/skills) — the open agent skills ecosystem.
 
 ```bash
-npx @basuruk/skills --agent claude-code codex   # specific agents
-npx @basuruk/skills --all                        # every agent detected
-npx @basuruk/skills --list                       # show the skills in this package
+npx skills@latest add basuruk/skills        # into this project
+npx skills@latest add basuruk/skills -g     # for every project on this machine
 ```
 
-Without a terminal (CI, a pipe) there is no picker: it installs into every agent
-it finds, or into Claude Code if it finds none. Name your agents with `--agent`
-when that matters.
+Pick the skill, pick the agent, or stay out of the way:
 
-Nothing is written to your project except the skill folders. A `skills-lock.json`
-appears only with `--from-github`, which installs from the
-[repository](https://github.com/BasuruK/skills) instead of the package on disk, so
-`npx skills update` can track it later.
+```bash
+npx skills@latest add basuruk/skills --list
+npx skills@latest add basuruk/skills --skill pair -a claude-code
+npx skills@latest add basuruk/skills --all -y
+```
 
-Requires Node 22.20 or later. Telemetry is off.
+Refresh later:
+
+```bash
+npx skills@latest update
+```
+
+**Where it lands.** A project install writes each skill into the agent's own folder —
+`.claude/skills/pair` for Claude Code, `.codex/skills/pair` for Codex, and 70 more — and
+`skills-lock.json` records the install so `update` knows what to refresh. `-g` installs the
+same way under your home directory.
+
+Requires Node 22.20 or later. The CLI reports anonymous install counts so
+[skills.sh](https://skills.sh) can rank skills — set `DISABLE_TELEMETRY=1` to turn that off.
+
+## Plugin install
+
+Plugins update themselves. Pick this if you would rather not run `update`:
+
+```bash
+claude plugin marketplace add basuruk/skills
+claude plugin install basuruk-skills@basuruk
+
+codex plugin marketplace add basuruk/skills
+codex plugin add basuruk-skills@basuruk
+```
 
 ## Skills
 
 - **pair** — Tracer-bullet pair programming and UID prose for step-by-step co-coding, teaching, and readable architecture explanations.
 
-## Release
+## Adding a skill
 
-Publishing is automated. Push a `v*` tag and the [publish workflow](.github/workflows/publish.yml) publishes to npm
-via [trusted publishing](https://docs.npmjs.com/trusted-publishers/) (OIDC — no npm token in the repo).
+1. Create `skills/<category>/<name>/SKILL.md` with `name` and `description` frontmatter.
+2. Add the path to `skills` in `.claude-plugin/plugin.json`.
+3. Bump `version` in `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json`.
 
-```bash
-npm version patch        # bumps package.json, commits and tags v<version>
-git push && git push origin "v$(node -p "require('./package.json').version")"
-```
-
-The tag must match `version` in `package.json` — the workflow fails otherwise. A
-prerelease version such as `1.2.0-beta.1` is published under the `next` tag
-instead of `latest`.
-
-> Adding a skill? Add its folder to `files` in `package.json`, otherwise it won't ship.
+`npm test` checks that the skills CLI finds every skill and that the plugin manifest
+matches the folders on disk.
 
 ## License
 

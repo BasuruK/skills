@@ -1,0 +1,21 @@
+{
+  "name": "basuruk",
+  "owner": {
+    "name": "BasuruK",
+    "url": "https://github.com/BasuruK"
+  },
+  "description": "Basuruk's agent skills for engineers who still write code.",
+  "plugins": [
+    {
+      "name": "basuruk-skills",
+      "source": "./",
+      "description": "Agent skills for real engineering: tracer-bullet pair programming and UID prose.",
+      "category": "engineering",
+      "keywords": [
+        "engineering",
+        "skills",
+        "pair-programming"
+      ]
+    }
+  ]
+}

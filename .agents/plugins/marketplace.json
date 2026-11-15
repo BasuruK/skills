@@ -1,0 +1,20 @@
+{
+  "name": "basuruk",
+  "interface": {
+    "displayName": "Basuruk Skills"
+  },
+  "plugins": [
+    {
+      "name": "basuruk-skills",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/BasuruK/skills.git"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Engineering"
+    }
+  ]
+}
