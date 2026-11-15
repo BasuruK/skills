@@ -1,0 +1,13 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "Pairing",
+      "description": "Tracer-bullet pair programming and UID prose for engineers who still write code.",
+      "skills": [
+        "pair"
+      ]
+    }
+  ]
+}
