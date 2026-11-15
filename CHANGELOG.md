@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.1.0
+
+Refined the `pair` skill loop and UID prose rules based on pairing sessions.
+
+- Replaced `TODO(you)` / `"draft"` approval stalls with a method-first teaching brief (**Why** in plain cause-and-effect, **What** as an exact veteran contract, **How + Example** with `input -> output` traces) plus showing the method in chat before writing it to disk.
+- Ended each step with one critical-thinking question on trade-offs, invariants, or edge cases so pairing stays collaborative without gating file writes.
+- Added the single-idea-per-sentence and clause-splitting rule to `UID Prose`.
+
 ## 2.0.0
 
 Replaced the custom installer with the open agent skills ecosystem.
