@@ -35,7 +35,7 @@ npx skills@latest update
 ```
 
 **Where it lands.** A project install writes each skill into the agent's own folder —
-`.claude/skills/pair` for Claude Code, `.codex/skills/pair` for Codex, and 70 more — and
+`.claude/skills/pair` for Claude Code, `.agents/skills/pair` for Codex, and 70 more — and
 `skills-lock.json` records the install so `update` knows what to refresh. `-g` installs the
 same way under your home directory.
 
@@ -44,7 +44,7 @@ Requires Node 22.20 or later. The CLI reports anonymous install counts so
 
 ## Plugin install
 
-Plugins update themselves. Pick this if you would rather not run `update`:
+Plugin installs can refresh themselves, so you would not run `update` yourself:
 
 ```bash
 claude plugin marketplace add basuruk/skills
@@ -53,6 +53,10 @@ claude plugin install basuruk-skills@basuruk
 codex plugin marketplace add basuruk/skills
 codex plugin add basuruk-skills@basuruk
 ```
+
+Auto-update is off for third-party marketplaces, so turn it on once per machine: in Claude Code
+run `/plugin` → **Marketplaces** → `basuruk` → **Enable auto-update**. Codex refreshes its
+marketplace snapshot with `codex plugin marketplace upgrade`.
 
 ## Skills
 

@@ -9,7 +9,9 @@ Replaced the custom installer with the open agent skills ecosystem.
   repository is the only distribution channel from now on.
 - Skills live in `skills/<category>/<name>/` now — the layout the skills CLI and skills.sh
   index. `pair` moved to `skills/engineering/pair`.
-- Added Claude Code and Codex plugin marketplaces, so plugin installs update themselves.
+- Added Claude Code and Codex plugin marketplaces. Plugin installs only refresh themselves once
+  auto-update is enabled for the marketplace (`/plugin` → Marketplaces → basuruk → Enable
+  auto-update); Codex refreshes its marketplace snapshot with `codex plugin marketplace upgrade`.
 - `npm test` now checks that the skills CLI finds every skill and that the plugin manifest
   matches the folders on disk.
 
