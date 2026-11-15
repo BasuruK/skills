@@ -2,12 +2,12 @@
   <img src="resources/skiils_image.png" alt="Basuruk Skills" width="400" />
 </p>
 
-<h1 align="center">Basuruk Skills</h1>
+<h1 align="center">Basuruk's Engineering Skills</h1>
 
 <p align="center">Teach a man to skill, and he'll never go skill-less.</p>
 <p align="center">A collection of skill for traditional software engineers who still want to code.</p>
 
-~ _If you are here to see AI generate all your code, then this repo is not for you :p_ 
+<p align="center" style="color: blue; font-style: italic;">If you are here to see AI generate all your code, then this repo is not for you :p</p>
 
 ## Install
 
