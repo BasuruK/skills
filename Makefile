@@ -7,11 +7,24 @@ VERSION := $(shell sed -n 's/.*"version": *"\([^"]*\)".*/\1/p' .claude-plugin/pl
 CODEX_VERSION := $(shell sed -n 's/.*"version": *"\([^"]*\)".*/\1/p' .codex-plugin/plugin.json)
 TAG := v$(VERSION)
 
+# `make release 2.1.0` and `make release v2.1.0` are both fine. The word must
+# match the manifests, so the tag can never disagree with what ships — the
+# manifests stay the source of truth.
+REQUESTED := $(patsubst v%,%,$(word 2,$(MAKECMDGOALS)))
+
+# Make treats every word after the target as another goal, so the version word
+# needs a rule of its own. Without it, `make release v2.0.0` tags and pushes,
+# then fails with "No rule to make target".
+ifneq ($(word 2,$(MAKECMDGOALS)),)
+$(word 2,$(MAKECMDGOALS)):
+	@:
+endif
+
 .PHONY: help test release
 
 help:
 	@echo "test     run the test suite"
-	@echo "release  tag $(TAG) and push it to origin"
+	@echo "release  tag $(TAG) and push it to origin (optional: make release $(VERSION))"
 
 test:
 	npm test
@@ -23,6 +36,8 @@ test:
 release:
 	@test "$(VERSION)" = "$(CODEX_VERSION)" || \
 		{ echo "version mismatch: .claude-plugin/plugin.json has $(VERSION), .codex-plugin/plugin.json has $(CODEX_VERSION)"; exit 1; }
+	@test -z "$(REQUESTED)" || test "$(REQUESTED)" = "$(VERSION)" || \
+		{ echo "requested $(REQUESTED) does not match the manifest version $(VERSION) — bump the manifests first"; exit 1; }
 	@git diff --quiet || { echo "working tree is dirty — commit or stash first"; exit 1; }
 	@test "$$(git branch --show-current)" = "main" || \
 		{ echo "not on main (on $$(git branch --show-current)) — merge first"; exit 1; }
