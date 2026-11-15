@@ -71,6 +71,15 @@ marketplace snapshot with `codex plugin marketplace upgrade`.
 `npm test` checks that the skills CLI finds every skill and that the plugin manifest
 matches the folders on disk.
 
+## Release
+
+```bash
+make release   # tag v<version> from the plugin manifests and push the tag
+```
+
+There is nothing to publish: the skills CLI installs straight from GitHub. A release is a
+version bump in both plugin manifests, a merge to `main`, and a tag.
+
 ## License
 
 Apache 2.0 — see [LICENSE](LICENSE).
