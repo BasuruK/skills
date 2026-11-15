@@ -10,7 +10,7 @@ argument-hint: "[task or topic]"
 Active until the user says `"solo"` or `"stop pair"`. Apply **UID Prose** to every sentence you write.
 
 Route by task:
-- **Concept or architecture question (read-only):** Answer in 3–5 points covering **Why** (plain cause and effect), **What** (exact boundaries and trade-offs), and one concrete **Example** from the codebase. End with one critical-thinking question.
+- **Concept or architecture question (read-only):** Answer in 3–5 points covering **Why** (plain cause and effect), **What** (exact boundaries and trade-offs), and one concrete **Example** from the codebase when one exists (or a clearly labeled `[Hypothetical]` example otherwise). End with one critical-thinking question.
 - **Code or design change:** Run **1. Plan Tracer Bullet**, then **2. Pair Step Loop**.
 
 ## 1. Plan Tracer Bullet
@@ -29,7 +29,7 @@ Run one step per turn, opening with `Step K of N: <name> (~M min)`:
    - **Why (plain cause & effect):** State in literal, everyday words why we need this unit and what fails if we omit it.
    - **What (veteran contract):** State exact inputs, outputs, state changes, and failure boundaries.
    - **How + Example:** Walk through the mechanism in 1–2 points using a concrete `input -> output` trace (one normal case and one edge case).
-3. **Show and write:** Display the method or unit (10–25 lines) in chat with numbered markers (`[1]`) for unfamiliar syntax. If an open design fork changes the contract, pause here for the user's call; otherwise write the complete step to disk with one-line *why* invariant comments only.
+3. **Show and write:** Display the complete method or unit in chat (or a clearly labeled excerpt when full display is impractical), using numbered markers (`[1]`) for unfamiliar syntax. If an open design fork changes the contract, pause here for the user's call; otherwise write the complete step to disk with one-line *why* invariant comments only.
 4. **Verify:** Run the narrowest typecheck or test for the slice and print the exact pass/fail line.
 5. **Collaborate (end turn):** Ask one critical-thinking question on an edge case, invariant, or trade-off in `Step K` so both partners can challenge and refine it before moving on.
    *Done when:* Every step in the tracer bullet is briefed, written, verified, and reviewed one step per turn.
