@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.1
+
+Rewrote the installer on top of Vercel's `skills` CLI.
+
+- Interactive picker for the coding agents to install into.
+- Installs into every agent directory the `skills` CLI supports, not just `.claude/skills`.
+- New flags: `--agent`, `--skill`, `--all`, `--list`, `--copy`, `--from-github`, `--yes`.
+- `--from-github` installs from the repository and writes `skills-lock.json`, so
+  `npx skills update` can track it.
+- Requires Node 22.20 or later. The binary is now named `basuruk-skills`.
+
 ## 1.1.0
 
 First published release.

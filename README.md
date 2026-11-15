@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="resources/skiils_image.png" alt="Basuruk Skills" width="400" />
+  <img src="https://raw.githubusercontent.com/BasuruK/skills/main/resources/skiils_image.png" alt="Basuruk Skills" width="400" />
 </p>
 
 <h1 align="center">Basuruk's Engineering Skills</h1>
