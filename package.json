@@ -1,11 +1,9 @@
 {
   "name": "@basuruk/skills",
-  "version": "1.1.2",
-  "description": "Install basuruk's agent skills into the coding agents of your choice",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Basuruk's agent skills for engineers who still write code",
   "type": "module",
-  "bin": {
-    "basuruk-skills": "bin/cli.js"
-  },
   "engines": {
     "node": ">=22.20.0"
   },
@@ -14,21 +12,10 @@
     "type": "git",
     "url": "git+https://github.com/BasuruK/skills.git"
   },
-  "files": [
-    "bin/",
-    "pair/",
-    "LICENSE",
-    "README.md",
-    "CHANGELOG.md"
-  ],
   "scripts": {
     "test": "node --test"
   },
-  "publishConfig": {
-    "access": "public"
-  },
-  "dependencies": {
-    "@clack/prompts": "^1.9.0",
+  "devDependencies": {
     "skills": "^1.8.1"
   }
 }

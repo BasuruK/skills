@@ -1,5 +1,20 @@
 # Changelog
 
+## 2.0.0
+
+Replaced the custom installer with the open agent skills ecosystem.
+
+- Install with `npx skills@latest add basuruk/skills` instead of `npx @basuruk/skills`.
+- Deleted the `bin/` installer, its tests, and the npm publish workflow. The GitHub
+  repository is the only distribution channel from now on.
+- Skills live in `skills/<category>/<name>/` now — the layout the skills CLI and skills.sh
+  index. `pair` moved to `skills/engineering/pair`.
+- Added Claude Code and Codex plugin marketplaces. Plugin installs only refresh themselves once
+  auto-update is enabled for the marketplace (`/plugin` → Marketplaces → basuruk → Enable
+  auto-update); Codex refreshes its marketplace snapshot with `codex plugin marketplace upgrade`.
+- `npm test` now checks that the skills CLI finds every skill and that the plugin manifest
+  matches the folders on disk.
+
 ## 1.1.1
 
 Rewrote the installer on top of Vercel's `skills` CLI.
@@ -21,8 +36,8 @@ First published release.
 ## Unpublished
 
 - `0.0.0-stage` — a placeholder version published to claim the `@basuruk` scope
-  name before the first real release. It shipped no usable content and has
-  been removed from the registry.
+  name before the first real release. It shipped no usable content and
+  has been removed from the registry.
 
   ```bash
   npm unpublish @basuruk/skills@0.0.0-stage
