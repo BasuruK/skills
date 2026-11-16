@@ -83,3 +83,9 @@ version bump in both plugin manifests, a merge to `main`, and a tag.
 ## License
 
 Apache 2.0 — see [LICENSE](LICENSE).
+
+### Acknowledgement of Inspiration
+
+> This project was inspired in part by insights from the following academic work, which investigates the processing challenges posed by AI-generated language. The mention of this paper does not imply endorsement by the authors, nor does it indicate that this project directly implements methods or findings from their research.
+
+Clark, T. H., Martin, M. B., & Mahowald, K. (2026). "Why is AI-generated language so hard to understand?" arXiv:2610.29162 [cs.CL]. https://arxiv.org/abs/2610.29162
