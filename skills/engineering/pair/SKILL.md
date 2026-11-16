@@ -22,12 +22,12 @@ Route by task:
 
 One step per turn, with at most one stop:
 
-1. **Land** (only if the previous step stopped): Write the step the user approved with one-line *why* invariant comments, run the narrowest typecheck or test, and print the pass/fail line. If the user objected, revise and re-show instead.
+1. **Land** (only if the previous step stopped): Write the step the user approved with one-line *why* invariant comments, run the narrowest typecheck or test, and print the pass/fail line. If the check fails, fix it or report the failure and end the turn, and never open the next step on a failing check. If the user objected, revise, re-show it (steps 3–5), and end the turn; land it only after approval.
 2. **Open:** `Step K of N: <name>` plus 1–2 UID sentences linking it to the previous step (or the plan).
 3. **Why:** One sentence on what breaks without this unit and which of the user's design decisions it implements.
 4. **Show:** The complete unit in chat (or a labeled excerpt), with `[n]` markers on non-obvious lines. Never call Write/Edit for code the user has not yet seen.
 5. **Walk:** One paragraph, no bullets. Trace one `input -> output` through the markers in order, then one edge case. Each sentence opens with the previous marker's result.
-6. **Stop or continue:** If the step creates or changes a contract (signature, state shape, failure behavior), ask one question the user must answer and end the turn. For wiring-only steps, write and verify now as in step 1, then open the next step.
+6. **Stop or continue:** If the step creates or changes a contract (signature, state shape, failure behavior), ask one question the user must answer and end the turn. For wiring-only steps, write and verify now as in step 1, and open the next step only if verification passes.
 
 ## UID Prose (Reference)
 
