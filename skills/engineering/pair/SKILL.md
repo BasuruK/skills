@@ -1,9 +1,7 @@
 ---
 name: pair
 description: >
-  Tracer-bullet pair programming, Why/What/How teaching, and single-idea UID
-  prose. Use when the user asks to pair program, teach while coding, or explain
-  architecture clearly.
+  Tracer-bullet pair programming, Why/What/How teaching, and single-idea UID prose. Use when the user asks to pair program, teach while coding, or explain architecture clearly.
 argument-hint: "[task or topic]"
 ---
 
@@ -22,23 +20,19 @@ Route by task:
 
 ## 2. Pair Step Loop
 
-Run one step per turn, opening with `Step K of N: <name> (~M min)`:
+One step per turn, with at most one stop:
 
-1. **Bridge (1–2 UID sentences):** Link `Step K` to the previous step (or the plan when `K = 1`) so the mental model stays connected.
-2. **Brief before code (point form):** For each method or unit in `Step K`, explain three things in chat:
-   - **Why (plain cause & effect):** State in literal, everyday words why we need this unit and what fails if we omit it.
-   - **What (veteran contract):** State exact inputs, outputs, state changes, and failure boundaries.
-   - **How + Example:** Walk through the mechanism in 1–2 points using a concrete `input -> output` trace (one normal case and one edge case).
-3. **Show and write:** Display the complete method or unit in chat (or a clearly labeled excerpt when full display is impractical), using numbered markers (`[1]`) for unfamiliar syntax. If an open design fork changes the contract, pause here for the user's call; otherwise write the complete step to disk with one-line *why* invariant comments only.
-4. **Verify:** Run the narrowest typecheck or test for the slice and print the exact pass/fail line.
-5. **Collaborate (end turn):** Ask one critical-thinking question on an edge case, invariant, or trade-off in `Step K` so both partners can challenge and refine it before moving on.
-   *Done when:* Every step in the tracer bullet is briefed, written, verified, and reviewed one step per turn.
+1. **Land** (only if the previous step stopped): Write the step the user approved with one-line *why* invariant comments, run the narrowest typecheck or test, and print the pass/fail line. If the check fails, fix it or report the failure and end the turn, and never open the next step on a failing check. If the user objected, revise, re-show it (steps 3–5), and end the turn; land it only after approval.
+2. **Open:** `Step K of N: <name>` plus 1–2 UID sentences linking it to the previous step (or the plan).
+3. **Why:** One sentence on what breaks without this unit and which of the user's design decisions it implements.
+4. **Show:** The complete unit in chat (or a labeled excerpt), with `[n]` markers on non-obvious lines. Never call Write/Edit for code the user has not yet seen.
+5. **Walk:** One paragraph, no bullets. Trace one `input -> output` through the markers in order, then one edge case. Each sentence opens with the previous marker's result.
+6. **Stop or continue:** If the step creates or changes a contract (signature, state shape, failure behavior), ask one question the user must answer and end the turn. For wiring-only steps, write and verify now as in step 1, and open the next step only if verification passes.
 
 ## UID Prose (Reference)
 
 - **One idea per sentence:** Give each sentence a single job. Break long or chained clauses into separate sentences linked by explicit transitions (`Because of this,`, `Otherwise,`, `For example,`).
 - **Short dependencies:** Place the actor and verb inside the first 6 words, and keep sentences under 18 words.
-- **Explicit connectors:** Retain optional `that`, `which`, `of`, and `for` (*"the token that the client sent"*) so phrase boundaries stay clear.
-- **Two-noun cap:** Break chains past two nouns with prepositions (*"retry lock for payment webhooks"*).
+- **Explicit connectors:** Retain optional `that`, `which`, `of`, and `for` (*"the token that the client sent"*), and break noun chains past two with prepositions (*"retry lock for payment webhooks"*).
 - **Concrete actors + plain verbs:** Name `we`, `the caller`, or `PostgreSQL` with everyday verbs (`save`, `check`, `reject`, `return`) and familiar word pairs.
 - **Given-before-new:** Open each sentence with a concept from the previous sentence before adding one new idea.
