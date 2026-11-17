@@ -66,7 +66,7 @@ marketplace snapshot with `codex plugin marketplace upgrade`.
 
 1. Create `skills/<category>/<name>/SKILL.md` with `name` and `description` frontmatter.
 2. Add the path to `skills` in `.claude-plugin/plugin.json`.
-3. Bump `version` in `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json`.
+3. Bump the version with `make bump <version>` (see [Release](#release)).
 
 `npm test` checks that the skills CLI finds every skill and that the plugin manifest
 matches the folders on disk.
@@ -74,8 +74,14 @@ matches the folders on disk.
 ## Release
 
 ```bash
-make release   # tag v<version> from the plugin manifests and push the tag
+make release-pr 2.2.0   # from clean main: branch, bump, push, open the version PR
+# merge the PR, then: git checkout main && git pull
+make release 2.2.0      # tag v2.2.0 from the plugin manifests and push the tag
 ```
+
+`make bump 2.2.0` is the bump step on its own: it sets the version in `package.json`, its
+lockfile, and both plugin manifests. `make release` only tags, and it refuses a dirty tree or
+a HEAD that is not `origin/main`.
 
 There is nothing to publish: the skills CLI installs straight from GitHub. A release is a
 version bump in both plugin manifests, a merge to `main`, and a tag.
