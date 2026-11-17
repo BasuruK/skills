@@ -20,14 +20,40 @@ $(word 2,$(MAKECMDGOALS)):
 	@:
 endif
 
-.PHONY: help test release
+.PHONY: help test bump release-pr release
 
 help:
 	@echo "test     run the test suite"
+	@echo "bump     set the version in package.json and both plugin manifests (make bump 2.2.0)"
+	@echo "release-pr  branch, bump, push and open the version PR (make release-pr 2.2.0)"
 	@echo "release  tag $(TAG) and push it to origin (optional: make release $(VERSION))"
 
 test:
 	npm test
+
+# Run on a branch and merge by PR: release refuses a dirty tree or a HEAD that
+# is not origin/main, so the bump can never be committed by release itself.
+bump:
+	@echo "$(REQUESTED)" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$$' || { echo "usage: make bump 2.2.0"; exit 1; }
+	@npm version "$(REQUESTED)" --no-git-tag-version --allow-same-version >/dev/null
+	@for f in .claude-plugin/plugin.json .codex-plugin/plugin.json; do \
+		perl -0pi -e 's/("version":\s*")[^"]*"/$${1}$(REQUESTED)"/' $$f; done
+	@echo "bumped to $(REQUESTED) — commit, merge, then: make release $(REQUESTED)"
+
+# One command from clean main to an open bump PR. Merge it, pull main, then
+# run `make release`.
+release-pr:
+	@echo "$(REQUESTED)" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$$' || { echo "usage: make release-pr 2.2.0"; exit 1; }
+	@git diff --quiet && git diff --cached --quiet || { echo "working tree is dirty — commit or stash first"; exit 1; }
+	@test "$$(git branch --show-current)" = "main" || { echo "not on main — switch first"; exit 1; }
+	@git fetch -q origin main && test "$$(git rev-parse HEAD)" = "$$(git rev-parse origin/main)" || { echo "HEAD is not origin/main — pull first"; exit 1; }
+	@git checkout -q -b "release/$(REQUESTED)"
+	@$(MAKE) --no-print-directory bump $(REQUESTED)
+	@git add package.json package-lock.json .claude-plugin/plugin.json .codex-plugin/plugin.json
+	@git commit -q -m "chore: bump version to $(REQUESTED)"
+	@git push -q -u origin "release/$(REQUESTED)"
+	@gh pr create --base main --title "Release $(REQUESTED)" \
+		--body "Bumps the version to $(REQUESTED) in package.json and both plugin manifests. After merge: \`make release $(REQUESTED)\`."
 
 # Guards first, side effects last: a bad release should fail before it tags.
 #
