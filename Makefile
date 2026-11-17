@@ -43,10 +43,10 @@ bump:
 # One command from clean main to an open bump PR. Merge it, pull main, then
 # run `make release`.
 release-pr:
-	@test -n "$(REQUESTED)" || { echo "usage: make release-pr 2.2.0"; exit 1; }
+	@echo "$(REQUESTED)" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$$' || { echo "usage: make release-pr 2.2.0"; exit 1; }
 	@git diff --quiet && git diff --cached --quiet || { echo "working tree is dirty — commit or stash first"; exit 1; }
 	@test "$$(git branch --show-current)" = "main" || { echo "not on main — switch first"; exit 1; }
-	@git fetch -q origin main && git diff --quiet origin/main -- || { echo "HEAD is not origin/main — pull first"; exit 1; }
+	@git fetch -q origin main && test "$$(git rev-parse HEAD)" = "$$(git rev-parse origin/main)" || { echo "HEAD is not origin/main — pull first"; exit 1; }
 	@git checkout -q -b "release/$(REQUESTED)"
 	@$(MAKE) --no-print-directory bump $(REQUESTED)
 	@git add package.json package-lock.json .claude-plugin/plugin.json .codex-plugin/plugin.json
