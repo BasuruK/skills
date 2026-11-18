@@ -26,7 +26,7 @@ One step per turn, with at most one stop:
 2. **Open:** `Step K of N: <name>` plus 1–2 Uniform Information Density sentences linking it to the previous step (or the plan).
 3. **Why:** One sentence on what breaks without this unit and which of the user's design decisions it implements.
 4. **Show:** The complete unit in chat (or a labeled excerpt), with `[n]` markers on non-obvious lines. Never call Write/Edit for code the user has not yet seen.
-5. **Walk:** One paragraph, no bullets. Trace one `input -> output` through the markers in order, then one edge case. Each sentence opens with the previous marker's result.
+5. **Walk:** One paragraph, with bullet points. Trace one `input -> output` through the markers in order, then one edge case. Each sentence opens with the previous marker's result.
 6. **Stop or continue:** If the step creates or changes a contract (signature, state shape, failure behavior), ask one question the user must answer and end the turn. For wiring-only steps, write and verify now as in step 1, and open the next step only if verification passes.
 
 ## Uniform Information Density Prose (Reference)
