@@ -67,6 +67,42 @@ test('release-pr performs the expected workflow with valid input', (t) => {
   assert.equal(JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')).version, '2.2.2');
 });
 
+for (const [scenario, error] of [
+  ['unstaged', /working tree is dirty/],
+  ['staged', /working tree is dirty/],
+  ['non-main', /not on main/],
+  ['different-revisions', /HEAD is not origin\/main/],
+]) {
+  test(`release-pr rejects ${scenario} without changing anything`, (t) => {
+    const dir = fixture(t);
+    const files = ['package.json', 'package-lock.json', '.claude-plugin/plugin.json', '.codex-plugin/plugin.json'];
+    const before = files.map(file => readFileSync(join(dir, file), 'utf8'));
+    const code = `
+      import childProcess from 'node:child_process';
+      import { syncBuiltinESMExports } from 'node:module';
+      const scenario = ${JSON.stringify(scenario)};
+      childProcess.spawnSync = (command, args) => {
+        console.log(JSON.stringify([command, ...args]));
+        const staged = args.includes('--cached');
+        const dirty = args[0] === 'diff' && ((scenario === 'unstaged' && !staged) || (scenario === 'staged' && staged));
+        const stdout = args[0] === 'branch' ? (scenario === 'non-main' ? 'feature' : 'main')
+          : args[0] === 'rev-parse' ? (scenario === 'different-revisions' && args[1] === 'origin/main' ? 'remote' : 'local') : '';
+        return { status: dirty ? 1 : 0, stdout };
+      };
+      syncBuiltinESMExports();
+      process.argv = ['node', 'release.mjs', 'release-pr', '2.2.2'];
+      await import(${JSON.stringify(releaseScript)});
+    `;
+    const result = spawnSync(process.execPath, ['--input-type=module', '-e', code], { cwd: dir, encoding: 'utf8' });
+    assert.equal(result.status, 1, result.stderr);
+    assert.match(result.stderr, error);
+    assert.deepEqual(files.map(file => readFileSync(join(dir, file), 'utf8')), before);
+    const commands = result.stdout.trim().split('\n').map(line => JSON.parse(line));
+    assert.ok(commands.some(([command, subcommand]) => command === 'git' && subcommand === 'diff'));
+    assert.ok(commands.every(([command, subcommand]) => command !== 'gh' && !(command === 'git' && ['checkout', 'push'].includes(subcommand))));
+  });
+}
+
 for (const [value, expected] of [['', 'false'], ['1', 'true'], ['true', 'true'], [' ', 'false']]) {
   test(`release signing setting ${JSON.stringify(value)}`, () => {
     const code = `
