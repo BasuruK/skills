@@ -36,3 +36,4 @@ One step per turn, with at most one stop:
 - **Explicit connectors:** Retain optional `that`, `which`, `of`, and `for` (*"the token that the client sent"*), and break noun chains past two with prepositions (*"retry lock for payment webhooks"*).
 - **Concrete actors + plain verbs:** Name `we`, `the caller`, or `PostgreSQL` with everyday verbs (`save`, `check`, `reject`, `return`) and familiar word pairs.
 - **Given-before-new:** Open each sentence with a concept from the previous sentence before adding one new idea.
+- **Thinking:** Extract core principles first then Exercise Abstract Thinking. Test Edge Cases or state assumptions before acting.
