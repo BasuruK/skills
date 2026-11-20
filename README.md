@@ -60,7 +60,7 @@ marketplace snapshot with `codex plugin marketplace upgrade`.
 
 ## Skills
 
-- **pair** — Tracer-bullet pair programming and Uniform Information Density prose for step-by-step co-coding, teaching, and readable architecture explanations.
+- **pair** — Interactive tracer-bullet pair programming with ELI5 mental models, A/B decision forks, and Uniform Information Density prose for step-by-step co-coding, teaching, and readable architecture explanations.
 
 ## Adding a skill
 
