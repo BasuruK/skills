@@ -30,7 +30,7 @@ Explore with read-only tools only. Write zero files in this phase.
 Repeat one step per turn:
 
 1. **Land or revise the previous step:**
-   - **If approved:** Write the approved step with one-line *why* invariant comments, run the narrowest typecheck or test, and print the pass/fail line. If the check fails, either report the failure and end the turn, or apply the repair (including an environment-only repair with no file changes), rerun the narrowest check, and print the post-repair pass/fail line—ending the turn if the rerun fails.
+   - **If approved:** Write the approved step (or approved repair) with one-line *why* invariant comments, run the narrowest typecheck or test, and print the pass/fail line. If the check fails: for an environment-only repair (no file changes), apply it, rerun the narrowest check, and print the post-repair pass/fail line—ending the turn if the rerun fails; otherwise report the failure, show any proposed code fix for approval, and end the turn without writing new edits.
    - **If changes were requested** (including tightening an edge case or test): Revise and re-show the step (steps 2–6), then request approval via the fork without writing any files.
 2. **Open:** `Step K of N: <name>` plus 1–2 sentences linking it to the previous step (or the plan).
 3. **Kitchen Table (step-level):**
