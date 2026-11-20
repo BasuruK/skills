@@ -29,7 +29,9 @@ Explore with read-only tools only. Write zero files in this phase.
 
 Repeat one step per turn:
 
-1. **Land (only if the previous turn's step was approved):** Write the approved step with one-line *why* invariant comments, run the narrowest typecheck or test, and print the pass/fail line. If the check fails, fix it or report the failure and end the turn. If the user asked for changes, revise, re-show (steps 2–6), and end the turn without writing.
+1. **Land or revise the previous step:**
+   - **If approved:** Write the approved step with one-line *why* invariant comments, run the narrowest typecheck or test, and print the pass/fail line. If the check fails, fix it or report the failure and end the turn.
+   - **If changes were requested** (including tightening an edge case or test): Revise and re-show the step (steps 2–6), then request approval via the fork without writing any files.
 2. **Open:** `Step K of N: <name>` plus 1–2 sentences linking it to the previous step (or the plan).
 3. **Kitchen Table (step-level):**
    - **Real-world picture (1–2 sentences, zero jargon):** State what breaks without this unit using the slice's everyday scene.
