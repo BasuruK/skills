@@ -2,7 +2,7 @@
   <img src="https://raw.githubusercontent.com/BasuruK/skills/main/resources/skiils_image.png" alt="Basuruk Skills" width="400" />
 </p>
 
-<h1 align="center">Basuruk's Engineering Skills</h1>
+<h1 align="center">Skills</h1>
 
 <p align="center">Teach a man to skill, and he'll never go skill-less.</p>
 <p align="center">A collection of skills for traditional software engineers who still want to code.</p>
